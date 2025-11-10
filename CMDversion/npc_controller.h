@@ -30,6 +30,7 @@ typedef struct {
 /* 构造函数 */
 NPC new_npc(const char *name, int chips);
 
+// NPC 接收来自 dealer 的消息处理函数
 void on_npc_message(void *self, const char *msg);
 
 void sendMessage2Dealer (void *self, const char *msg);

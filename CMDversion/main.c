@@ -11,7 +11,7 @@ int main() {
     /**
      * 消息处理部分
      */
-    // 双向绑定
+    // dealer和npc双向绑定
     dealer.receiverTarget = &npc.receiveMessageFromDealer;
     npc.receiverTarget = &dealer.receiveMessageFromNPC;
     // 测试消息互发
