@@ -2,7 +2,7 @@
 #define INTERFACE_H
 
 /**
- * 通用的消息模板接口
+ * 通用的回调函数消息模板接口
  */
 typedef struct IMessageReceiver {
     void (*on_message)(void *self, const char *msg);
@@ -31,8 +31,36 @@ typedef enum {
  * 消息类型(上面的总和)
  */
 typedef enum {
-    DEALER_COMMAND,
-    GAME_STATE,
+    dealer_COMMAND,
+    game_STATE,
+} MSG_TYPE;
+
+typedef struct {
+    MSG_TYPE type;
+    union{
+        DEALER_COMMAND dealer_command;
+        GAME_STATE game_state;
+    } detail;
 } MSG;
+
+
+
+
+/**
+ * 其它模块向牌桌发送的消息类型
+ */
+typedef enum {
+    NPC_NAME, // NPC的名字
+    NPC_CHIPS, // NPC的筹码数量
+    NPC_CARDS, // NPC的手牌
+} COMMAND_TYPE_TO_TABLE;
+
+/**
+ * 其它模块向牌桌发送消息时统一使用的消息结构体
+ */
+typedef struct {
+    COMMAND_TYPE_TO_TABLE msgtype;  // 消息类型
+    void *payload;      // 指向数据的通用指针
+} COMMAND_MSG_TO_TABLE;
 
 #endif

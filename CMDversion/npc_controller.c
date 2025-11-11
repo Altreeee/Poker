@@ -16,19 +16,19 @@ NPC new_npc(const char *name, int chips) {
 }
 
 // NPC 接收来自 dealer 的消息处理函数
-void on_npc_message(void *self, const MSG msg) {
+void on_npc_message(void *self, const MSG* msg) {
     //printf("NPC received: %s\n", msg);
-    switch(msg) {
-        case DEALER_COMMAND:
-            switch(msg) {
+    switch(msg ->type) {
+        case dealer_COMMAND:
+            switch(msg ->detail.dealer_command) {
                 case Place_bets_now:
                     // 等待用户或npc下注
                     // 将下注信息发送给 dealer
                     break;
             }
             break;
-        case GAME_STATE:
-            switch(msg) {
+        case game_STATE:
+            switch(msg ->detail.game_state) {
                 // 洗牌
                 case Shuffle:
                     printf("Shuffle cards now!\n");

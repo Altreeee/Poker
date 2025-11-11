@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "config.h": "c",
-        "interface.h": "c"
+        "interface.h": "c",
+        "stdio.h": "c",
+        "card_table.h": "c"
     }
 }

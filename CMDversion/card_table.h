@@ -5,11 +5,13 @@
 #ifndef CARD_TABLE_H
 #define CARD_TABLE_H
 
-typedef struct {
-    void (*showUI)(void);
-    
-} CardTable;
 
-void showUI(void);
+/**
+ * global functions
+ */
+// 通用接口函数
+void sendCommand2Table(COMMAND_TYPE_TO_TABLE cmd, int param);
+
+
 
 #endif // CARD_TABLE_H
