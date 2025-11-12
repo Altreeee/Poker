@@ -10,7 +10,7 @@
  * global functions
  */
 // 通用接口函数
-void sendCommand2Table(COMMAND_TYPE_TO_TABLE cmd, int param);
+void sendCommand2Table(COMMAND_TYPE_TO_TABLE msgtype, int index_player, int change);
 
 
 

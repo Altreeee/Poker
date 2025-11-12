@@ -5,8 +5,17 @@
  * 通用的回调函数消息模板接口
  */
 typedef struct IMessageReceiver {
-    void (*on_message)(void *self, const char *msg);
+    void (*on_message)(void *self, MSG *msg);
 } IMessageReceiver;
+
+// 统一模块返回类型
+typedef enum{
+    Success,
+    Fail,
+} MODULE_PROCESS_RESULT;
+
+
+
 
 /**
  * 从荷官处发给npc的命令枚举
@@ -35,10 +44,17 @@ typedef enum {
     game_STATE,
 } MSG_TYPE;
 
+typedef enum {
+    FROM_DEALER,
+    FROM_SCHEDULER,
+    // 其它来源模块，需要后续添加
+} MSG_SOURCE;
+
 typedef struct {
-    MSG_TYPE type;
+    MSG_SOURCE msg_source; // 消息来源
     union{
         DEALER_COMMAND dealer_command;
+        // 根据不同的来源分为不同的命令类型
         GAME_STATE game_state;
     } detail;
 } MSG;
@@ -50,9 +66,7 @@ typedef struct {
  * 其它模块向牌桌发送的消息类型
  */
 typedef enum {
-    NPC_NAME, // NPC的名字
-    NPC_CHIPS, // NPC的筹码数量
-    NPC_CARDS, // NPC的手牌
+    CHANGE_NPC_CARDS, // NPC的手牌
 } COMMAND_TYPE_TO_TABLE;
 
 /**
@@ -60,7 +74,8 @@ typedef enum {
  */
 typedef struct {
     COMMAND_TYPE_TO_TABLE msgtype;  // 消息类型
-    void *payload;      // 指向数据的通用指针
+    int index_player;   // 待更改的玩家序号
+    int change; // 具体更改(正负数)
 } COMMAND_MSG_TO_TABLE;
 
 #endif

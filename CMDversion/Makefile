@@ -6,8 +6,8 @@ CFLAGS = -Wall -Wextra -std=c11 -g
 
 # 项目结构
 # 最终生成./game可执行文件
-TARGET = game
-SRC = main.c npc_controller.c dealer.c
+TARGET = testcardtable
+SRC = Debug.c card_table.c scheduler.c card_sender.c
 OBJ = $(SRC:.c=.o)
 
 # 默认目标
