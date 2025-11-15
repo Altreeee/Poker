@@ -13,5 +13,10 @@
  */
 int rollDice(int numberOfDice, int sidesPerDie);
 
+/**
+ * 生成从min到max之间的随机数（包含min和max）
+ */
+int generateRandomNumber(int min, int max);
+
 
 #endif // DICE_ROLLER_H

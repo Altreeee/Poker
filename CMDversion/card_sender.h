@@ -2,6 +2,7 @@
 #define CARD_SENDER_H
 
 #include "config/interface.h"
+#include "config/card.h"
 
 /*
 typedef struct CardSender {
@@ -12,5 +13,6 @@ CardSender new_cardsender(void);
 */
 
 
+Card* cardsenderProcesser(int num_cards);
 
 #endif // CARD_SENDER_H

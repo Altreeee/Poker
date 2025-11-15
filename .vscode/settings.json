@@ -3,6 +3,7 @@
         "config.h": "c",
         "interface.h": "c",
         "stdio.h": "c",
-        "card_table.h": "c"
+        "card_table.h": "c",
+        "scheduler.h": "c"
     }
 }

@@ -4,13 +4,16 @@
 
 #ifndef CARD_TABLE_H
 #define CARD_TABLE_H
-
+#include "config/interface.h"
 
 /**
  * global functions
  */
 // 通用接口函数
-void sendCommand2Table(COMMAND_TYPE_TO_TABLE msgtype, int index_player, int change);
+void sendCommand2Table(COMMAND_TYPE_TO_TABLE msgtype, COMMAND_CONTENT_TO_TABLE msgcontent);
+
+void initUI(void);
+void startContinuousRunUI(void);
 
 
 

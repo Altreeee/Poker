@@ -3,8 +3,10 @@
  * 在ui的循环过程中依次唤醒各个模块的处理函数
  */
 #include "config/interface.h"
+#include "config/card.h"
 #include "scheduler.h"
 #include "card_table.h"
+#include "card_sender.h"
 
 /*
 // 向绑定的第index个模块发送消息
@@ -30,9 +32,11 @@ Scheduler new_scheduler(void){
 
 
 
-GAME_STATE current_game_state = Shuffle;
+GAME_STATE current_game_state = Deal_the_hole_cards;
 
 void wakeUpScheduler(void) {
+    Card* card_t; // 临时存储发牌器发来的牌结构体数组指针，注意：后面需要free
+    int new_cards_num;
     switch (current_game_state) {
         case Deal_the_hole_cards:
             /*
@@ -41,24 +45,72 @@ void wakeUpScheduler(void) {
                 然后接着发送下一个消息并等待回复然后把得到的消息发到card_table模块去更新UI
             */
             // 调用发底牌模块处理函数
-            if (cardsenderProcesser(2) == Success){
-                sendCommand2Table(CHANGE_NPC_CARDS, 1, 2);
+            new_cards_num = 2;
+            card_t = cardsenderProcesser(new_cards_num);
+            if (card_t){
+                // 给每个npc新发两张牌（这里应该去修改npc_controller中保存的npc具体数据，
+                //      然后由npc_controller发送命令更新数据，但是测试阶段跳过这部分，直接向ui发送修改）
+                //      直接发送一个新NPC结构体
+                sendCommand2Table(
+                    NpcDataUpdate, 
+                    (COMMAND_CONTENT_TO_TABLE){
+                        .npc_information = {
+                            .NpcIndex = 1,
+                            .HandCards = {
+                                .cards = {
+                                    {.rank = card_t[0].rank, .suit = card_t[0].suit},
+                                    {.rank = card_t[1].rank, .suit = card_t[1].suit}
+                                }
+                            }
+                        }
+                    }
+                );
             }
             current_game_state = Deal_the_flop;
             break;
         case Deal_the_flop:
-            // 调用发翻牌模块处理函数
-            if (cardsenderProcesser(2) == Success){
-                sendCommand2Table(CHANGE_NPC_CARDS, 2, 2);
+            // 这里直接与上一个状态相同，每次给下一个npc发一次新的手牌，仅限于测试用
+            new_cards_num = 2;
+            card_t = cardsenderProcesser(new_cards_num);
+            if (card_t){
+                sendCommand2Table(
+                    NpcDataUpdate, 
+                    (COMMAND_CONTENT_TO_TABLE){
+                        .npc_information = {
+                            .NpcIndex = 2, // 给下一个npc发牌
+                            .HandCards = {
+                                .cards = {
+                                    {.rank = card_t[0].rank, .suit = card_t[0].suit},
+                                    {.rank = card_t[1].rank, .suit = card_t[1].suit}
+                                }
+                            }
+                        }
+                    }
+                );
             }
             current_game_state = Deal_the_turn;
             break;
         case Deal_the_turn:
-            // 调用发转牌模块处理函数
-            if (cardsenderProcesser(2) == Success){
-                sendCommand2Table(CHANGE_NPC_CARDS, 3, 2);
+            new_cards_num = 2;
+            card_t = cardsenderProcesser(new_cards_num);
+            if (card_t){
+                sendCommand2Table(
+                    NpcDataUpdate, 
+                    (COMMAND_CONTENT_TO_TABLE){
+                        .npc_information = {
+                            .NpcIndex = 3, // 给下一个npc发牌
+                            .HandCards = {
+                                .cards = {
+                                    {.rank = card_t[0].rank, .suit = card_t[0].suit},
+                                    {.rank = card_t[1].rank, .suit = card_t[1].suit}
+                                }
+                            }
+                        }
+                    }
+                );
             }
             current_game_state = Deal_the_hole_cards;
             break;
     }
+    free(card_t);
 }

@@ -8,3 +8,7 @@ int rollDice(int numberOfDice, int sidesPerDie) {
     return total;
 }
 
+int generateRandomNumber(int min, int max){
+    int res = rand() % (max - min + 1) + min;
+    return res;
+}

@@ -6,16 +6,10 @@
 #ifndef NPC_CONTROLLER_H
 #define NPC_CONTROLLER_H
 #include "config/interface.h"
+#include "config/card.h"
 
 
-typedef struct {
-    int rank; // 牌面值
-    char suit; // 花色
-} Card; // 单张牌
 
-typedef struct {
-    Card cards[2]; // 手牌包含两张牌
-} HandCards; // 手牌
 
 typedef struct {
     char name[10]; // npc名称

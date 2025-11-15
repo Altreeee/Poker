@@ -9,15 +9,20 @@
 #include "config/interface.h"
 #include "scheduler.h"
 
-
+// 平台检测宏，Linux 用 usleep，Windows 用 Sleep
+#ifdef _WIN32
+#include <windows.h>
+#define SLEEP_MS(ms) Sleep(ms)
+#else
+#include <unistd.h>
+#define SLEEP_MS(ms) usleep((ms) * 1000)
+#endif
 
 // 指令消息队列（循环缓冲区）
 #define CMD_QUEUE_SIZE 16
 static COMMAND_MSG_TO_TABLE cmdQueue[CMD_QUEUE_SIZE];
 static int head = 0, tail = 0;
 
-void initUI(void);
-void startContinuousRunUI(void);
 
 static void processCommands(void);
 
@@ -28,8 +33,9 @@ static void updateBox(int x, int y, int width, int height, const char *lines[], 
 
 int boxWidth = 28;
 int boxHeight = 9;
-char buf1[100], buf2[100], buf3[100]; // 3个用于存储更新内容的缓冲区
-int card1, card2, card3 = 0; // 3个初始牌数
+char buf1_1[100], buf2_1[100], buf3_1[100]; // 用于存储更新内容的缓冲区
+char buf1_2[100], buf2_2[100], buf3_2[100];
+HandCards handcard1, handcard2, handcard3 = {0}; // 3个NPC的初始手牌
 
 
 // 通用接口函数(给其它模块调用)
@@ -39,9 +45,9 @@ NPC_Info npc = { "Dealer Bob" };
 Message msg = { MSG_NPC_NAME, &npc };
 sendCommand(&msg);
 */
-void sendCommand2Table(COMMAND_TYPE_TO_TABLE msgtype, int index_player, int change) {
+void sendCommand2Table(COMMAND_TYPE_TO_TABLE msgtype, COMMAND_CONTENT_TO_TABLE msgcontent) {
     // 入队
-    cmdQueue[tail] = (COMMAND_MSG_TO_TABLE){msgtype, index_player, change};
+    cmdQueue[tail] = (COMMAND_MSG_TO_TABLE){msgtype, msgcontent};
     tail = (tail + 1) % CMD_QUEUE_SIZE;
 }
 
@@ -52,22 +58,30 @@ static void processCommands(void) {
         head = (head + 1) % CMD_QUEUE_SIZE;
 
         switch (msg.msgtype) {
-            case CHANGE_NPC_CARDS:   
+            case NpcDataUpdate:   
                 /* ...逻辑... */ 
-                if(msg.index_player == 1){
-                    card1 += msg.change;
-                    sprintf(buf1, "CARD: %d", card1);
+                if(msg.msgcontent.npc_information.NpcIndex == 1){
+                    handcard1 = msg.msgcontent.npc_information.HandCards;
+                    sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit);
+                    sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
+                    char *linesA[] = { buf1_1, buf1_2 };
+                    updateBox(2, 2, boxWidth, boxHeight, linesA, 2);
                 }
-                else if (msg.index_player == 2){
-                    card2 += msg.change;
-                    sprintf(buf2, "CARD: %d", card2);
+                else if (msg.msgcontent.npc_information.NpcIndex == 2){
+                    handcard2 = msg.msgcontent.npc_information.HandCards;
+                    sprintf(buf2_1, "HandCard 1: %d, %d", handcard2.cards[0].rank, handcard2.cards[0].suit);
+                    sprintf(buf2_2, "HandCard 2: %d, %d", handcard2.cards[1].rank, handcard2.cards[1].suit);
+                    char *linesB[] = { buf2_1, buf2_2 };
+                    updateBox(32, 2, boxWidth, boxHeight, linesB, 2);
                 }
-                else if (msg.index_player == 3){
-                    card3 += msg.change;
-                    sprintf(buf3, "CARD: %d", card3);
+                else if (msg.msgcontent.npc_information.NpcIndex == 3){
+                    handcard3 = msg.msgcontent.npc_information.HandCards;
+                    sprintf(buf3_1, "HandCard 1: %d, %d", handcard3.cards[0].rank, handcard3.cards[0].suit);
+                    sprintf(buf3_2, "HandCard 2: %d, %d", handcard3.cards[1].rank, handcard3.cards[1].suit);
+                    char *linesC[] = { buf3_1, buf3_2 };
+                    updateBox(62, 2, boxWidth, boxHeight, linesC, 2);
                 }
-                
-                
+
                 break;
             
             default: break;
@@ -78,16 +92,19 @@ static void processCommands(void) {
 void initUI(void){
     clearScreen();
     // 画出三个方框的初始位置
-    drawBox(2,  2, boxWidth, boxHeight, "Box A");
-    drawBox(32, 2, boxWidth, boxHeight, "Box B");
-    drawBox(62, 2, boxWidth, boxHeight, "Box C");
+    drawBox(2,  2, boxWidth, boxHeight, "NPC 1");
+    drawBox(32, 2, boxWidth, boxHeight, "NPC 2");
+    drawBox(62, 2, boxWidth, boxHeight, "NPC 3");
 
-    sprintf(buf1, "CARD: %d", card1);
-    const char *linesA[] = { buf1, "NPC 1" };
-    sprintf(buf2, "CARD: %d", card2);
-    const char *linesB[] = { buf2, "NPC 2" };
-    sprintf(buf3, "CARD: %d", card3);
-    const char *linesC[] = { buf3, "NPC 3" };
+    sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit); // NPC 1的手牌1（现在先把花色用数字代替（还没知道怎么直接把枚举类型的名字写出来））
+    sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
+    char *linesA[] = { buf1_1, buf1_2 };
+    sprintf(buf2_1, "HandCard 1: %d, %d", handcard2.cards[0].rank, handcard2.cards[0].suit);
+    sprintf(buf2_2, "HandCard 2: %d, %d", handcard2.cards[1].rank, handcard2.cards[1].suit);
+    char *linesB[] = { buf2_1, buf2_2 };
+    sprintf(buf3_1, "HandCard 1: %d, %d", handcard3.cards[0].rank, handcard3.cards[0].suit);
+    sprintf(buf3_2, "HandCard 2: %d, %d", handcard3.cards[1].rank, handcard3.cards[1].suit);
+    char *linesC[] = { buf3_1, buf3_2 };
 
     updateBox(2, 2, boxWidth, boxHeight, linesA, 2);
     updateBox(32, 2, boxWidth, boxHeight, linesB, 2);

@@ -1,12 +1,7 @@
 #ifndef INTERFACE_H
 #define INTERFACE_H
 
-/**
- * 通用的回调函数消息模板接口
- */
-typedef struct IMessageReceiver {
-    void (*on_message)(void *self, MSG *msg);
-} IMessageReceiver;
+
 
 // 统一模块返回类型
 typedef enum{
@@ -60,22 +55,44 @@ typedef struct {
 } MSG;
 
 
+/**
+ * 临时NPC结构体（测试card_table用）
+ */
+#include "card.h"
 
+typedef struct {
+    int NpcIndex; //1、2、3
+    HandCards HandCards;
+} NPC_INFORMATION;
 
 /**
  * 其它模块向牌桌发送的消息类型
  */
 typedef enum {
-    CHANGE_NPC_CARDS, // NPC的手牌
+    NpcDataUpdate, // 更新npc数据
 } COMMAND_TYPE_TO_TABLE;
+
+typedef union {
+    NPC_INFORMATION npc_information; // 如果消息类型是NpcDataUpdate，直接传输新的NPC结构体过去
+}  COMMAND_CONTENT_TO_TABLE;
 
 /**
  * 其它模块向牌桌发送消息时统一使用的消息结构体
  */
 typedef struct {
     COMMAND_TYPE_TO_TABLE msgtype;  // 消息类型
-    int index_player;   // 待更改的玩家序号
-    int change; // 具体更改(正负数)
+    COMMAND_CONTENT_TO_TABLE msgcontent; // 消息内容（几种不同结构体，更新不同部分的内容）
 } COMMAND_MSG_TO_TABLE;
+
+
+
+
+
+/**
+ * 通用的回调函数消息模板接口
+ */
+typedef struct IMessageReceiver {
+    void (*on_message)(void *self, MSG *msg);
+} IMessageReceiver;
 
 #endif

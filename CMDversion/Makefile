@@ -1,13 +1,13 @@
 # 编译器
 CC = gcc
 
-# 编译选项（可以视情况添加调试信息）
+# 编译选项
 CFLAGS = -Wall -Wextra -std=c11 -g
 
 # 项目结构
 # 最终生成./game可执行文件
 TARGET = testcardtable
-SRC = Debug.c card_table.c scheduler.c card_sender.c
+SRC = Debug.c card_table.c scheduler.c card_sender.c dice_roller.c
 OBJ = $(SRC:.c=.o)
 
 # 默认目标
