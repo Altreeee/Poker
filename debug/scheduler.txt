@@ -7,7 +7,6 @@
 #include "scheduler.h"
 #include "card_table.h"
 #include "card_sender.h"
-#include <stdlib.h>
 
 /*
 // 向绑定的第index个模块发送消息
@@ -66,7 +65,6 @@ void wakeUpScheduler(void) {
                         }
                     }
                 );
-                free(card_t);
             }
             current_game_state = Deal_the_flop;
             break;
@@ -89,7 +87,6 @@ void wakeUpScheduler(void) {
                         }
                     }
                 );
-                free(card_t);
             }
             current_game_state = Deal_the_turn;
             break;
@@ -111,10 +108,9 @@ void wakeUpScheduler(void) {
                         }
                     }
                 );
-                free(card_t);
             }
             current_game_state = Deal_the_hole_cards;
             break;
     }
-    // free(card_t);
+    free(card_t);
 }

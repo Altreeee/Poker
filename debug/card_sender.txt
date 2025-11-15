@@ -7,7 +7,6 @@
 #include "card_table.h"
 #include "dice_roller.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 
 

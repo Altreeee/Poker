@@ -8,7 +8,6 @@
 #include <unistd.h>
 #include "config/interface.h"
 #include "scheduler.h"
-#include "config/card.h"
 
 // 平台检测宏，Linux 用 usleep，Windows 用 Sleep
 #ifdef _WIN32
@@ -36,7 +35,7 @@ int boxWidth = 28;
 int boxHeight = 9;
 char buf1_1[100], buf2_1[100], buf3_1[100]; // 用于存储更新内容的缓冲区
 char buf1_2[100], buf2_2[100], buf3_2[100];
-HandCards handcard1 = {0}, handcard2 = {0}, handcard3 = {0}; // 3个NPC的初始手牌
+HandCards handcard1, handcard2, handcard3 = {0}; // 3个NPC的初始手牌
 
 
 // 通用接口函数(给其它模块调用)
@@ -65,21 +64,21 @@ static void processCommands(void) {
                     handcard1 = msg.msgcontent.npc_information.HandCards;
                     sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit);
                     sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
-                    const char *linesA[] = { buf1_1, buf1_2 };
+                    char *linesA[] = { buf1_1, buf1_2 };
                     updateBox(2, 2, boxWidth, boxHeight, linesA, 2);
                 }
                 else if (msg.msgcontent.npc_information.NpcIndex == 2){
                     handcard2 = msg.msgcontent.npc_information.HandCards;
                     sprintf(buf2_1, "HandCard 1: %d, %d", handcard2.cards[0].rank, handcard2.cards[0].suit);
                     sprintf(buf2_2, "HandCard 2: %d, %d", handcard2.cards[1].rank, handcard2.cards[1].suit);
-                    const char *linesB[] = { buf2_1, buf2_2 };
+                    char *linesB[] = { buf2_1, buf2_2 };
                     updateBox(32, 2, boxWidth, boxHeight, linesB, 2);
                 }
                 else if (msg.msgcontent.npc_information.NpcIndex == 3){
                     handcard3 = msg.msgcontent.npc_information.HandCards;
                     sprintf(buf3_1, "HandCard 1: %d, %d", handcard3.cards[0].rank, handcard3.cards[0].suit);
                     sprintf(buf3_2, "HandCard 2: %d, %d", handcard3.cards[1].rank, handcard3.cards[1].suit);
-                    const char *linesC[] = { buf3_1, buf3_2 };
+                    char *linesC[] = { buf3_1, buf3_2 };
                     updateBox(62, 2, boxWidth, boxHeight, linesC, 2);
                 }
 
@@ -99,13 +98,13 @@ void initUI(void){
 
     sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit); // NPC 1的手牌1（现在先把花色用数字代替（还没知道怎么直接把枚举类型的名字写出来））
     sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
-    const char *linesA[] = { buf1_1, buf1_2 };
+    char *linesA[] = { buf1_1, buf1_2 };
     sprintf(buf2_1, "HandCard 1: %d, %d", handcard2.cards[0].rank, handcard2.cards[0].suit);
     sprintf(buf2_2, "HandCard 2: %d, %d", handcard2.cards[1].rank, handcard2.cards[1].suit);
-    const char *linesB[] = { buf2_1, buf2_2 };
+    char *linesB[] = { buf2_1, buf2_2 };
     sprintf(buf3_1, "HandCard 1: %d, %d", handcard3.cards[0].rank, handcard3.cards[0].suit);
     sprintf(buf3_2, "HandCard 2: %d, %d", handcard3.cards[1].rank, handcard3.cards[1].suit);
-    const char *linesC[] = { buf3_1, buf3_2 };
+    char *linesC[] = { buf3_1, buf3_2 };
 
     updateBox(2, 2, boxWidth, boxHeight, linesA, 2);
     updateBox(32, 2, boxWidth, boxHeight, linesB, 2);
@@ -121,33 +120,15 @@ void startContinuousRunUI(void){
     }
 }
 
-// -------------------------
-// 光标移动与清屏
-// -------------------------
-#ifdef _WIN32
-void clearScreen() {
-    system("cls");
-}
-
-void moveCursor(int x, int y) {
-    COORD coord;
-    coord.X = x;
-    coord.Y = y;
-    SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), coord);
-}
-#else
-void clearScreen() {
+static void clearScreen() {
     printf("\033[2J");
     fflush(stdout);
 }
 
-void moveCursor(int x, int y) {
+static void moveCursor(int x, int y) {
     printf("\033[%d;%dH", y, x);
     fflush(stdout);
 }
-#endif
-
-
 
 static void drawBox(int x, int y, int width, int height, const char *title) {
     int i, j;
@@ -176,7 +157,7 @@ static void drawBox(int x, int y, int width, int height, const char *title) {
 }
 
 static void updateBox(int x, int y, int width, int height, const char *lines[], int lineCount) {
-    int i;
+    int i, j;
     for (i = 0; i < height - 2 && i < lineCount; i++) {
         moveCursor(x + 1, y + 1 + i);
         printf("%-*s", width - 2, lines[i]);

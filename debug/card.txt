@@ -1,5 +1,5 @@
-#ifndef CARD_H
-#define CARD_H
+#ifndef CARD_SENDER_H
+#define CARD_SENDER_H
 
 typedef enum {
     Spades,     // 黑桃
@@ -17,4 +17,4 @@ typedef struct {
     Card cards[2]; // 手牌包含两张牌
 } HandCards; // 手牌
 
-#endif // CARD_H
+#endif // CARD_SENDER_H
