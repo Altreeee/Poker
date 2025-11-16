@@ -8,6 +8,8 @@
 #include "config/interface.h"
 #include "card_sender.h"
 #include "scheduler.h"
+#include <time.h>
+#include <stdlib.h>
 
 
 int main(){
@@ -20,6 +22,8 @@ int main(){
     scheduler.send_target[0] = &cardsender.msg_recive_interface;
     */
     
+    // 使用当前时间作为随机数种子
+    srand((unsigned int)time(NULL)); // 注意不要多次重复初始化随机数种子，只在main函数中做一次
 
     initUI();
     startContinuousRunUI();

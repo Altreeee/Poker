@@ -4,6 +4,6 @@
 #include "config/interface.h"
 #include "config/card.h"
 
-Card* cardsenderProcesser(int num_cards);
+CARD* cardsenderProcesser(int num_cards);
 
 #endif // CARD_SENDER_H

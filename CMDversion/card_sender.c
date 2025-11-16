@@ -26,7 +26,7 @@ CardSender new_cardsender(void) {
 
 // 开放给外界使用的接口
 // 输入需要新发放的牌数，返回动态分配的结构体数组指针
-Card* cardsenderProcesser(int num_cards){
+CARD* cardsenderProcesser(int num_cards){
     // 测试用代码
     // printf("send %d cards out", num_cards); 不能再用printf，会影响ui显示
 
@@ -34,7 +34,7 @@ Card* cardsenderProcesser(int num_cards){
         返回num_cards对应数量的牌结构体
     */
     // 分配空间
-    Card* cards = malloc(sizeof(Card)*num_cards);
+    CARD* cards = malloc(sizeof(CARD)*num_cards);
     if(!cards) return NULL;
     // 装内容
     int i;

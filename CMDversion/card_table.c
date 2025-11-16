@@ -33,10 +33,16 @@ static void drawBox(int x, int y, int width, int height, const char *title);
 static void updateBox(int x, int y, int width, int height, const char *lines[], int lineCount);
 
 int boxWidth = 28;
-int boxHeight = 9;
+int boxHeight = 7;
+
 char buf1_1[100], buf2_1[100], buf3_1[100]; // 用于存储更新内容的缓冲区
 char buf1_2[100], buf2_2[100], buf3_2[100];
-HandCards handcard1 = {0}, handcard2 = {0}, handcard3 = {0}; // 3个NPC的初始手牌
+char bufPlayer_1[100], bufPlayer_2[100];
+char bufPublic_1[100], bufPublic_2[100], bufPublic_3[100]; // 先用3张公共牌，省去后续找最好组合的流程，直接判断5张牌的大小
+
+HAND_CARDS handcard1 = {0}, handcard2 = {0}, handcard3 = {0}; // 3个NPC的初始手牌
+HAND_CARDS handcardPlayer = {0}; // 玩家初始手牌
+PUBLIC_CARDS publiccards = {0}; // 公共牌
 
 
 // 通用接口函数(给其它模块调用)
@@ -59,24 +65,24 @@ static void processCommands(void) {
         head = (head + 1) % CMD_QUEUE_SIZE;
 
         switch (msg.msgtype) {
-            case NpcDataUpdate:   
+            case Npc_data_update:   
                 /* ...逻辑... */ 
-                if(msg.msgcontent.npc_information.NpcIndex == 1){
-                    handcard1 = msg.msgcontent.npc_information.HandCards;
+                if(msg.msgcontent.npc_information.npc_index == 1){
+                    handcard1 = msg.msgcontent.npc_information.hand_cards;
                     sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit);
                     sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
                     const char *linesA[] = { buf1_1, buf1_2 };
                     updateBox(2, 2, boxWidth, boxHeight, linesA, 2);
                 }
-                else if (msg.msgcontent.npc_information.NpcIndex == 2){
-                    handcard2 = msg.msgcontent.npc_information.HandCards;
+                else if (msg.msgcontent.npc_information.npc_index == 2){
+                    handcard2 = msg.msgcontent.npc_information.hand_cards;
                     sprintf(buf2_1, "HandCard 1: %d, %d", handcard2.cards[0].rank, handcard2.cards[0].suit);
                     sprintf(buf2_2, "HandCard 2: %d, %d", handcard2.cards[1].rank, handcard2.cards[1].suit);
                     const char *linesB[] = { buf2_1, buf2_2 };
                     updateBox(32, 2, boxWidth, boxHeight, linesB, 2);
                 }
-                else if (msg.msgcontent.npc_information.NpcIndex == 3){
-                    handcard3 = msg.msgcontent.npc_information.HandCards;
+                else if (msg.msgcontent.npc_information.npc_index == 3){
+                    handcard3 = msg.msgcontent.npc_information.hand_cards;
                     sprintf(buf3_1, "HandCard 1: %d, %d", handcard3.cards[0].rank, handcard3.cards[0].suit);
                     sprintf(buf3_2, "HandCard 2: %d, %d", handcard3.cards[1].rank, handcard3.cards[1].suit);
                     const char *linesC[] = { buf3_1, buf3_2 };
@@ -92,11 +98,20 @@ static void processCommands(void) {
 
 void initUI(void){
     clearScreen();
-    // 画出三个方框的初始位置
+    // 画出三个NPC方框的初始位置
     drawBox(2,  2, boxWidth, boxHeight, "NPC 1");
     drawBox(32, 2, boxWidth, boxHeight, "NPC 2");
     drawBox(62, 2, boxWidth, boxHeight, "NPC 3");
+    // 玩家位置
+    drawBox(62, 2 + boxHeight + 4, boxWidth, boxHeight, "U");
+    // 公共牌位置
+    drawBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, "Public Card");
+    // 沟通+输入栏
+    drawBox(32, 2 + boxHeight + 4, boxWidth, boxHeight, "Words2U");
 
+    /*
+        初始化npc部分ui显示
+    */
     sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit); // NPC 1的手牌1（现在先把花色用数字代替（还没知道怎么直接把枚举类型的名字写出来））
     sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
     const char *linesA[] = { buf1_1, buf1_2 };
@@ -110,6 +125,27 @@ void initUI(void){
     updateBox(2, 2, boxWidth, boxHeight, linesA, 2);
     updateBox(32, 2, boxWidth, boxHeight, linesB, 2);
     updateBox(62, 2, boxWidth, boxHeight, linesC, 2);
+
+    /*
+        初始化玩家部分ui显示
+    */
+    sprintf(bufPlayer_1, "HandCard 1: %d, %d", handcardPlayer.cards[0].rank, handcardPlayer.cards[0].suit);
+    sprintf(bufPlayer_2, "HandCard 2: %d, %d", handcardPlayer.cards[1].rank, handcardPlayer.cards[1].suit);
+    const char *linesPlayer[] = { bufPlayer_1, bufPlayer_2 };
+    updateBox(62, 2 + boxHeight + 4, boxWidth, boxHeight, linesPlayer, 2);
+
+    /*
+        初始化公共牌部分ui显示
+    */
+    sprintf(bufPublic_1, "HandCard 1: %d, %d", publiccards.cards[0].rank, publiccards.cards[0].suit);
+    sprintf(bufPublic_2, "HandCard 2: %d, %d", publiccards.cards[1].rank, publiccards.cards[1].suit);
+    sprintf(bufPublic_3, "HandCard 3: %d, %d", publiccards.cards[2].rank, publiccards.cards[2].suit);
+    const char *linesPublic[] = { bufPublic_1, bufPublic_2, bufPublic_3 };
+    updateBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, linesPlayer, 3);
+
+    /*
+        初始化沟通栏部分ui显示
+    */
 }
 
 void startContinuousRunUI(void){

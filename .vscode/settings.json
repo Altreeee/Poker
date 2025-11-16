@@ -4,6 +4,7 @@
         "interface.h": "c",
         "stdio.h": "c",
         "card_table.h": "c",
-        "scheduler.h": "c"
+        "scheduler.h": "c",
+        "card.h": "c"
     }
 }

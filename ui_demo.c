@@ -88,12 +88,21 @@ int main() {
     clearScreen();
 
     int boxWidth = 28;
-    int boxHeight = 9;
+    int boxHeight = 7;
 
     // 三个方框的初始位置
     drawBox(2,  2, boxWidth, boxHeight, "Box A");
     drawBox(32, 2, boxWidth, boxHeight, "Box B");
     drawBox(62, 2, boxWidth, boxHeight, "Box C");
+
+    // 玩家位置
+    drawBox(62, 2 + boxHeight + 4, boxWidth, boxHeight, "ME");
+
+    // 公共牌位置
+    drawBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, "Public Card");
+
+    // 沟通+输入栏
+    drawBox(32, 2 + boxHeight + 4, boxWidth, boxHeight, "Public Card");
 
     int counter = 0;
     char buf1[100], buf2[100], buf3[100];

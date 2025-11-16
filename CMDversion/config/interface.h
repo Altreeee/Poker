@@ -23,6 +23,7 @@ typedef enum {
  * 当前进行状态
  */
 typedef enum {
+    Game_start,
     Shuffle,             // 洗牌
     Deal_the_hole_cards, // 发底牌, 每人发两张手牌
     Deal_the_flop,       // 发翻牌，翻开三张公共牌
@@ -35,13 +36,13 @@ typedef enum {
  * 消息类型(上面的总和)
  */
 typedef enum {
-    dealer_COMMAND,
-    game_STATE,
+    Dealer_command,
+    Game_state,
 } MSG_TYPE;
 
 typedef enum {
-    FROM_DEALER,
-    FROM_SCHEDULER,
+    From_dealer,
+    From_scheduler,
     // 其它来源模块，需要后续添加
 } MSG_SOURCE;
 
@@ -61,15 +62,15 @@ typedef struct {
 #include "card.h"
 
 typedef struct {
-    int NpcIndex; //1、2、3
-    HandCards HandCards;
+    int npc_index; //1、2、3
+    HAND_CARDS hand_cards;
 } NPC_INFORMATION;
 
 /**
  * 其它模块向牌桌发送的消息类型
  */
 typedef enum {
-    NpcDataUpdate, // 更新npc数据
+    Npc_data_update, // 更新npc数据
 } COMMAND_TYPE_TO_TABLE;
 
 typedef union {

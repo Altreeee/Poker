@@ -36,7 +36,7 @@ Scheduler new_scheduler(void){
 GAME_STATE current_game_state = Deal_the_hole_cards;
 
 void wakeUpScheduler(void) {
-    Card* card_t; // 临时存储发牌器发来的牌结构体数组指针，注意：后面需要free
+    CARD* card_t; // 临时存储发牌器发来的牌结构体数组指针，注意：后面需要free
     int new_cards_num;
     switch (current_game_state) {
         case Deal_the_hole_cards:
@@ -53,11 +53,11 @@ void wakeUpScheduler(void) {
                 //      然后由npc_controller发送命令更新数据，但是测试阶段跳过这部分，直接向ui发送修改）
                 //      直接发送一个新NPC结构体
                 sendCommand2Table(
-                    NpcDataUpdate, 
+                    Npc_data_update, 
                     (COMMAND_CONTENT_TO_TABLE){
                         .npc_information = {
-                            .NpcIndex = 1,
-                            .HandCards = {
+                            .npc_index = 1,
+                            .hand_cards = {
                                 .cards = {
                                     {.rank = card_t[0].rank, .suit = card_t[0].suit},
                                     {.rank = card_t[1].rank, .suit = card_t[1].suit}
@@ -76,11 +76,11 @@ void wakeUpScheduler(void) {
             card_t = cardsenderProcesser(new_cards_num);
             if (card_t){
                 sendCommand2Table(
-                    NpcDataUpdate, 
+                    Npc_data_update, 
                     (COMMAND_CONTENT_TO_TABLE){
                         .npc_information = {
-                            .NpcIndex = 2, // 给下一个npc发牌
-                            .HandCards = {
+                            .npc_index = 2, // 给下一个npc发牌
+                            .hand_cards = {
                                 .cards = {
                                     {.rank = card_t[0].rank, .suit = card_t[0].suit},
                                     {.rank = card_t[1].rank, .suit = card_t[1].suit}
@@ -98,11 +98,11 @@ void wakeUpScheduler(void) {
             card_t = cardsenderProcesser(new_cards_num);
             if (card_t){
                 sendCommand2Table(
-                    NpcDataUpdate, 
+                    Npc_data_update, 
                     (COMMAND_CONTENT_TO_TABLE){
                         .npc_information = {
-                            .NpcIndex = 3, // 给下一个npc发牌
-                            .HandCards = {
+                            .npc_index = 3, // 给下一个npc发牌
+                            .hand_cards = {
                                 .cards = {
                                     {.rank = card_t[0].rank, .suit = card_t[0].suit},
                                     {.rank = card_t[1].rank, .suit = card_t[1].suit}
