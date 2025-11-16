@@ -66,15 +66,21 @@ typedef struct {
     HAND_CARDS hand_cards;
 } NPC_INFORMATION;
 
+typedef struct {
+    char* specific_content; // 要显示的具体内容
+} COMMUNICATE_INFORMATION;
+
 /**
  * 其它模块向牌桌发送的消息类型
  */
 typedef enum {
     Npc_data_update, // 更新npc数据
+    Content_update,  // 更新通知显示数据
 } COMMAND_TYPE_TO_TABLE;
 
 typedef union {
     NPC_INFORMATION npc_information; // 如果消息类型是NpcDataUpdate，直接传输新的NPC结构体过去
+    COMMUNICATE_INFORMATION content_information; // 向ui传输显示通知的内容
 }  COMMAND_CONTENT_TO_TABLE;
 
 /**

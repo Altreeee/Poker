@@ -39,6 +39,8 @@ char buf1_1[100], buf2_1[100], buf3_1[100]; // 用于存储更新内容的缓冲
 char buf1_2[100], buf2_2[100], buf3_2[100];
 char bufPlayer_1[100], bufPlayer_2[100];
 char bufPublic_1[100], bufPublic_2[100], bufPublic_3[100]; // 先用3张公共牌，省去后续找最好组合的流程，直接判断5张牌的大小
+char bufCommunicateContent[100]; // 通知显示内容
+char* content_t = "..."; // 临时显示内容
 
 HAND_CARDS handcard1 = {0}, handcard2 = {0}, handcard3 = {0}; // 3个NPC的初始手牌
 HAND_CARDS handcardPlayer = {0}; // 玩家初始手牌
@@ -66,7 +68,7 @@ static void processCommands(void) {
 
         switch (msg.msgtype) {
             case Npc_data_update:   
-                /* ...逻辑... */ 
+                /* npc数据更新逻辑 */ 
                 if(msg.msgcontent.npc_information.npc_index == 1){
                     handcard1 = msg.msgcontent.npc_information.hand_cards;
                     sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit);
@@ -90,7 +92,15 @@ static void processCommands(void) {
                 }
 
                 break;
-            
+            case Content_update:
+                /* 显示内容更新逻辑 */
+                if(msg.msgcontent.content_information.specific_content){
+                    content_t = msg.msgcontent.content_information.specific_content;
+                    sprintf(bufCommunicateContent, " - : %s", content_t);
+                    const char *linesCommunicateContent[] = { bufCommunicateContent };
+                    updateBox(32, 2 + boxHeight + 4, boxWidth, boxHeight, linesCommunicateContent, 1);
+                }
+                break;
             default: break;
         }
     }
@@ -146,6 +156,9 @@ void initUI(void){
     /*
         初始化沟通栏部分ui显示
     */
+    sprintf(bufCommunicateContent, " - : %s", content_t);
+    const char *linesCommunicateContent[] = { bufCommunicateContent };
+    updateBox(32, 2 + boxHeight + 4, boxWidth, boxHeight, linesCommunicateContent, 1);
 }
 
 void startContinuousRunUI(void){
@@ -153,7 +166,7 @@ void startContinuousRunUI(void){
         // 调度器依次唤醒其它模块
         wakeUpScheduler();
         processCommands();
-        SLEEP_MS(300);
+        SLEEP_MS(3000);
     }
 }
 

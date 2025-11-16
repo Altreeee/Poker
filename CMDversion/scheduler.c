@@ -33,12 +33,21 @@ Scheduler new_scheduler(void){
 
 
 
-GAME_STATE current_game_state = Deal_the_hole_cards;
+GAME_STATE current_game_state = Game_start;
 
 void wakeUpScheduler(void) {
     CARD* card_t; // 临时存储发牌器发来的牌结构体数组指针，注意：后面需要free
     int new_cards_num;
     switch (current_game_state) {
+        case Game_start:
+            sendCommand2Table(
+                Content_update, 
+                (COMMAND_CONTENT_TO_TABLE){
+                    .content_information.specific_content = "Game Start"
+                }
+            );
+            current_game_state = Deal_the_hole_cards;
+            break;
         case Deal_the_hole_cards:
             /*
                 给多个外部模块依次发消息，并等待回信，
