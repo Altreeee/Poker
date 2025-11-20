@@ -28,7 +28,9 @@ typedef enum {
     get_Game_start_confirm, // 将获取模式转换确认单独作为一个状态
     Shuffle,             // 洗牌
     Deal_the_hole_cards, // 发底牌, 每人发两张手牌
+    get_Deal_the_hole_cards_confirm,
     Deal_the_flop,       // 发翻牌，翻开三张公共牌
+    get_Deal_the_flop_confirm,
     Deal_the_turn,       // 发转牌，翻开第四张公共牌
     Deal_the_river,      // 发河牌，翻开第五张公共牌
     Showdown,            // 摊牌，开始比牌大小
@@ -68,6 +70,15 @@ typedef struct {
     HAND_CARDS hand_cards;
 } NPC_INFORMATION;
 
+/**
+ * 公共牌结构体
+ */
+typedef struct {
+    PUBLIC_CARDS public_cards;
+} PUBLIC_CARDS_INFORMATION;
+
+
+
 typedef struct {
     char* specific_content; // 要显示的具体内容
 } COMMUNICATE_INFORMATION;
@@ -78,11 +89,13 @@ typedef struct {
 typedef enum {
     Npc_data_update, // 更新npc数据
     Content_update,  // 更新通知显示数据
+    Public_cards_update, // 更新公共牌数据
 } COMMAND_TYPE_TO_TABLE;
 
 typedef union {
-    NPC_INFORMATION npc_information; // 如果消息类型是NpcDataUpdate，直接传输新的NPC结构体过去
+    NPC_INFORMATION npc_information; // 如果消息类型是Npc_data_update，直接传输新的NPC结构体过去
     COMMUNICATE_INFORMATION content_information; // 向ui传输显示通知的内容
+    PUBLIC_CARDS_INFORMATION public_cards_information; // 如果消息类型是Public_cards_update，直接传新的公共牌过去
 }  COMMAND_CONTENT_TO_TABLE;
 
 /**

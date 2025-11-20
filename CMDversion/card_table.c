@@ -93,7 +93,7 @@ static void processCommands(void) {
         switch (msg.msgtype) {
             case Npc_data_update:   
                 /* npc数据更新逻辑 */ 
-                if(msg.msgcontent.npc_information.npc_index == 1){
+                if (msg.msgcontent.npc_information.npc_index == 1){
                     handcard1 = msg.msgcontent.npc_information.hand_cards;
                     sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit);
                     sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
@@ -123,15 +123,27 @@ static void processCommands(void) {
                 }
 
                 break;
+
             case Content_update:
                 /* 显示内容更新逻辑 */
-                if(msg.msgcontent.content_information.specific_content){
+                if (msg.msgcontent.content_information.specific_content){
                     content_t = msg.msgcontent.content_information.specific_content;
                     sprintf(bufCommunicateContent, " - : %s", content_t);
                     const char *linesCommunicateContent[] = { bufCommunicateContent };
                     updateBox(32, 2 + boxHeight + 4, boxWidth, boxHeight, linesCommunicateContent, 1);
                 }
                 break;
+
+            case Public_cards_update:
+                /* 更新公共牌数据 */
+                publiccards = msg.msgcontent.public_cards_information.public_cards;
+                sprintf(bufPublic_1, "PublicCard 1: %d, %d", publiccards.cards[0].rank, publiccards.cards[0].suit);
+                sprintf(bufPublic_2, "PublicCard 2: %d, %d", publiccards.cards[1].rank, publiccards.cards[1].suit);
+                sprintf(bufPublic_3, "PublicCard 3: %d, %d", publiccards.cards[2].rank, publiccards.cards[2].suit);
+                const char *linesPublic[] = { bufPublic_1, bufPublic_2, bufPublic_3 };
+                updateBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, linesPublic, 3);
+                break;
+
             default: break;
         }
     }
