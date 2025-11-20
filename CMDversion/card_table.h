@@ -11,6 +11,7 @@
  */
 // 通用接口函数
 void sendCommand2Table(COMMAND_TYPE_TO_TABLE msgtype, COMMAND_CONTENT_TO_TABLE msgcontent);
+void getUserInput(char* ui_input);
 
 void initUI(void);
 void startContinuousRunUI(void);

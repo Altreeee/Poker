@@ -60,6 +60,30 @@ void sendCommand2Table(COMMAND_TYPE_TO_TABLE msgtype, COMMAND_CONTENT_TO_TABLE m
     tail = (tail + 1) % CMD_QUEUE_SIZE;
 }
 
+// 清理用户输入内容
+static void clearInputLine(int x, int y, int width) {
+    moveCursor(x, y);
+    for (int i = 0; i < width; i++) putchar(' ');
+    fflush(stdout);
+    moveCursor(x, y); // 光标回到原点
+}
+
+// 由schedule.c直接调用，阻塞，只有在得到了用户输入后才会继续运行schedule
+// ui_input需要由调用这个函数并使用input内容的模块初始化，如char ui_input[100];
+// updateBox(32, 2 + boxHeight + 4, boxWidth, boxHeight, linesCommunicateContent, 1);
+void getUserInput(char* ui_input) {
+    int x_input = 34;
+    int y_input = 2 + boxHeight + 4 + boxHeight - 2;
+    moveCursor(x_input, y_input); // 光标放在输入框内部，例如 Box A 第二行左边
+    printf(">> ");
+    fflush(stdout);
+
+    // ========= 阻塞输入 =========
+    fgets(ui_input, sizeof(100 * sizeof(char)), stdin);
+    ui_input[strcspn(ui_input, "\n")] = '\0'; // 去掉换行
+    clearInputLine(34, 2 + boxHeight + 4 + boxHeight - 2, 5); // 假设输入框宽度5
+}
+
 // 处理指令队列
 static void processCommands(void) {
     while (head != tail) {
@@ -89,6 +113,13 @@ static void processCommands(void) {
                     sprintf(buf3_2, "HandCard 2: %d, %d", handcard3.cards[1].rank, handcard3.cards[1].suit);
                     const char *linesC[] = { buf3_1, buf3_2 };
                     updateBox(62, 2, boxWidth, boxHeight, linesC, 2);
+                }
+                else if (msg.msgcontent.npc_information.npc_index == 4){
+                    handcardPlayer = msg.msgcontent.npc_information.hand_cards;
+                    sprintf(bufPlayer_1, "HandCard 1: %d, %d", handcardPlayer.cards[0].rank, handcardPlayer.cards[0].suit);
+                    sprintf(bufPlayer_2, "HandCard 2: %d, %d", handcardPlayer.cards[1].rank, handcardPlayer.cards[1].suit);
+                    const char *linesPlayer[] = { bufPlayer_1, bufPlayer_2 };
+                    updateBox(62, 2 + boxHeight + 4, boxWidth, boxHeight, linesPlayer, 2);
                 }
 
                 break;
@@ -147,11 +178,11 @@ void initUI(void){
     /*
         初始化公共牌部分ui显示
     */
-    sprintf(bufPublic_1, "HandCard 1: %d, %d", publiccards.cards[0].rank, publiccards.cards[0].suit);
-    sprintf(bufPublic_2, "HandCard 2: %d, %d", publiccards.cards[1].rank, publiccards.cards[1].suit);
-    sprintf(bufPublic_3, "HandCard 3: %d, %d", publiccards.cards[2].rank, publiccards.cards[2].suit);
+    sprintf(bufPublic_1, "PublicCard 1: %d, %d", publiccards.cards[0].rank, publiccards.cards[0].suit);
+    sprintf(bufPublic_2, "PublicCard 2: %d, %d", publiccards.cards[1].rank, publiccards.cards[1].suit);
+    sprintf(bufPublic_3, "PublicCard 3: %d, %d", publiccards.cards[2].rank, publiccards.cards[2].suit);
     const char *linesPublic[] = { bufPublic_1, bufPublic_2, bufPublic_3 };
-    updateBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, linesPlayer, 3);
+    updateBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, linesPublic, 3);
 
     /*
         初始化沟通栏部分ui显示
@@ -166,7 +197,7 @@ void startContinuousRunUI(void){
         // 调度器依次唤醒其它模块
         wakeUpScheduler();
         processCommands();
-        SLEEP_MS(3000);
+        SLEEP_MS(300);
     }
 }
 

@@ -23,7 +23,9 @@ typedef enum {
  * 当前进行状态
  */
 typedef enum {
+    // 显示提示信息，由于ui是队列式处理任务，但是getUserInput却是阻塞式，因此为了让显示一定早于输入，要让显示在输入之前的状态
     Game_start,
+    get_Game_start_confirm, // 将获取模式转换确认单独作为一个状态
     Shuffle,             // 洗牌
     Deal_the_hole_cards, // 发底牌, 每人发两张手牌
     Deal_the_flop,       // 发翻牌，翻开三张公共牌

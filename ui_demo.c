@@ -108,7 +108,7 @@ int main() {
     char buf1[100], buf2[100], buf3[100];
 
     while (1) {
-        sprintf(buf1, "Temp: %d C", counter); // 把“Temp: counter C”写入buffer1当中
+        sprintf(buf1, "Temp: %d C", counter); 
         const char *linesA[] = { buf1, "Running..." };
 
         sprintf(buf2, "Speed: %d km/h", counter % 120);
