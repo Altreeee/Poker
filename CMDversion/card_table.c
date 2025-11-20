@@ -84,6 +84,49 @@ void getUserInput(char* ui_input) {
     clearInputLine(34, 2 + boxHeight + 4 + boxHeight - 2, 5); // 假设输入框宽度5
 }
 
+
+
+// 在公共牌 publiccards 发生改变后更新显示
+static void update_publiccards() {
+    sprintf(bufPublic_1, "PublicCard 1: %d, %d", publiccards.cards[0].rank, publiccards.cards[0].suit);
+    sprintf(bufPublic_2, "PublicCard 2: %d, %d", publiccards.cards[1].rank, publiccards.cards[1].suit);
+    sprintf(bufPublic_3, "PublicCard 3: %d, %d", publiccards.cards[2].rank, publiccards.cards[2].suit);
+    const char *linesPublic[] = { bufPublic_1, bufPublic_2, bufPublic_3 };
+    updateBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, linesPublic, 3);
+}
+// 在NPC1\2\3手牌 handcard1\2\3 发生改变后更新显示
+static void update_npc1_handcards() {
+    sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit);
+    sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
+    const char *linesA[] = { buf1_1, buf1_2 };
+    updateBox(2, 2, boxWidth, boxHeight, linesA, 2);
+}
+static void update_npc2_handcards() {
+    sprintf(buf2_1, "HandCard 1: %d, %d", handcard2.cards[0].rank, handcard2.cards[0].suit);
+    sprintf(buf2_2, "HandCard 2: %d, %d", handcard2.cards[1].rank, handcard2.cards[1].suit);
+    const char *linesB[] = { buf2_1, buf2_2 };
+    updateBox(32, 2, boxWidth, boxHeight, linesB, 2);
+}
+static void update_npc3_handcards() {
+    sprintf(buf3_1, "HandCard 1: %d, %d", handcard3.cards[0].rank, handcard3.cards[0].suit);
+    sprintf(buf3_2, "HandCard 2: %d, %d", handcard3.cards[1].rank, handcard3.cards[1].suit);
+    const char *linesC[] = { buf3_1, buf3_2 };
+    updateBox(62, 2, boxWidth, boxHeight, linesC, 2);
+}
+// 在玩家手牌 handcardPlayer 发生改变后更新显示
+static void update_player_handcards() {
+    sprintf(bufPlayer_1, "HandCard 1: %d, %d", handcardPlayer.cards[0].rank, handcardPlayer.cards[0].suit);
+    sprintf(bufPlayer_2, "HandCard 2: %d, %d", handcardPlayer.cards[1].rank, handcardPlayer.cards[1].suit);
+    const char *linesPlayer[] = { bufPlayer_1, bufPlayer_2 };
+    updateBox(62, 2 + boxHeight + 4, boxWidth, boxHeight, linesPlayer, 2);
+}
+// 在通知 bufCommunicateContent 发生改变后更新显示
+static void update_communication_content() {
+    const char *linesCommunicateContent[] = { bufCommunicateContent };
+    updateBox(32, 2 + boxHeight + 4, boxWidth, boxHeight, linesCommunicateContent, 1);
+}
+
+
 // 处理指令队列
 static void processCommands(void) {
     while (head != tail) {
@@ -95,33 +138,20 @@ static void processCommands(void) {
                 /* npc数据更新逻辑 */ 
                 if (msg.msgcontent.npc_information.npc_index == 1){
                     handcard1 = msg.msgcontent.npc_information.hand_cards;
-                    sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit);
-                    sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
-                    const char *linesA[] = { buf1_1, buf1_2 };
-                    updateBox(2, 2, boxWidth, boxHeight, linesA, 2);
+                    update_npc1_handcards();
                 }
                 else if (msg.msgcontent.npc_information.npc_index == 2){
                     handcard2 = msg.msgcontent.npc_information.hand_cards;
-                    sprintf(buf2_1, "HandCard 1: %d, %d", handcard2.cards[0].rank, handcard2.cards[0].suit);
-                    sprintf(buf2_2, "HandCard 2: %d, %d", handcard2.cards[1].rank, handcard2.cards[1].suit);
-                    const char *linesB[] = { buf2_1, buf2_2 };
-                    updateBox(32, 2, boxWidth, boxHeight, linesB, 2);
+                    update_npc2_handcards();
                 }
                 else if (msg.msgcontent.npc_information.npc_index == 3){
                     handcard3 = msg.msgcontent.npc_information.hand_cards;
-                    sprintf(buf3_1, "HandCard 1: %d, %d", handcard3.cards[0].rank, handcard3.cards[0].suit);
-                    sprintf(buf3_2, "HandCard 2: %d, %d", handcard3.cards[1].rank, handcard3.cards[1].suit);
-                    const char *linesC[] = { buf3_1, buf3_2 };
-                    updateBox(62, 2, boxWidth, boxHeight, linesC, 2);
+                    update_npc3_handcards();
                 }
                 else if (msg.msgcontent.npc_information.npc_index == 4){
                     handcardPlayer = msg.msgcontent.npc_information.hand_cards;
-                    sprintf(bufPlayer_1, "HandCard 1: %d, %d", handcardPlayer.cards[0].rank, handcardPlayer.cards[0].suit);
-                    sprintf(bufPlayer_2, "HandCard 2: %d, %d", handcardPlayer.cards[1].rank, handcardPlayer.cards[1].suit);
-                    const char *linesPlayer[] = { bufPlayer_1, bufPlayer_2 };
-                    updateBox(62, 2 + boxHeight + 4, boxWidth, boxHeight, linesPlayer, 2);
+                    update_player_handcards();
                 }
-
                 break;
 
             case Content_update:
@@ -129,19 +159,14 @@ static void processCommands(void) {
                 if (msg.msgcontent.content_information.specific_content){
                     content_t = msg.msgcontent.content_information.specific_content;
                     sprintf(bufCommunicateContent, " - : %s", content_t);
-                    const char *linesCommunicateContent[] = { bufCommunicateContent };
-                    updateBox(32, 2 + boxHeight + 4, boxWidth, boxHeight, linesCommunicateContent, 1);
+                    update_communication_content();
                 }
                 break;
 
             case Public_cards_update:
                 /* 更新公共牌数据 */
                 publiccards = msg.msgcontent.public_cards_information.public_cards;
-                sprintf(bufPublic_1, "PublicCard 1: %d, %d", publiccards.cards[0].rank, publiccards.cards[0].suit);
-                sprintf(bufPublic_2, "PublicCard 2: %d, %d", publiccards.cards[1].rank, publiccards.cards[1].suit);
-                sprintf(bufPublic_3, "PublicCard 3: %d, %d", publiccards.cards[2].rank, publiccards.cards[2].suit);
-                const char *linesPublic[] = { bufPublic_1, bufPublic_2, bufPublic_3 };
-                updateBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, linesPublic, 3);
+                update_publiccards();
                 break;
 
             default: break;
