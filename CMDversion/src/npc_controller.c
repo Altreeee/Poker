@@ -3,59 +3,63 @@
 #include <string.h>
 #include <stdio.h>
 
+typedef struct {
+    HAND_CARDS handcards;
+    int chips;
+} NPC;
 
-NPC new_npc(const char *name, int chips) {
-    NPC p = {0}; // 所有内容置 0
-    strcpy(p.name, name);
-    p.chips = chips;
-    p.receiveMessageFromDealer.on_message = on_npc_message; // 从 dealer 接收消息的消息接收器
+// 每一个具体的数据应当存储在对应的对象结构体中
+static NPC npc1, npc2, npc3;
+static NPC player;
 
-    p.sendMessageToDealer = sendMessage2Dealer; // 发送消息给 dealer 的函数指针
-    
-    return p;
-}
-
-// NPC 接收来自 dealer 的消息处理函数
-void on_npc_message(void *self, const MSG* msg) {
-    //printf("NPC received: %s\n", msg);
-    switch(msg ->type) {
-        case dealer_COMMAND:
-            switch(msg ->detail.dealer_command) {
-                case Place_bets_now:
-                    // 等待用户或npc下注
-                    // 将下注信息发送给 dealer
-                    break;
+// 向UI更新新的NPC数据
+static void sendCommand2Table_NPC_data_update (int npc_index, NPC update_target) {
+    sendCommand2Table(
+        Npc_data_update, 
+        (COMMAND_CONTENT_TO_TABLE){
+            .npc_information = {
+                .npc_index = npc_index,
+                .hand_cards = update_target.handcards
             }
-            break;
-        case game_STATE:
-            switch(msg ->detail.game_state) {
-                // 洗牌
-                case Shuffle:
-                    printf("Shuffle cards now!\n");
-                    break;
-                // 发底牌
-                case Deal_the_hole_cards:
-                    // 等待荷官发来底牌的信息
-                    break;
-                case Deal_the_flop:
-                    // 等待荷官发来新翻开的牌的信息
-                    break;
-                case Deal_the_turn:
-                    break;
-                case Deal_the_river:
-                    break;
-                case Showdown:
-                    // 等待荷官发来结算信息
-                    break;
-            }
-            break;
-    }
+        }
+    );
 }
 
-void sendMessage2Dealer (void *self, const char *msg) {
-    NPC *npc = (NPC *)self;
-    if (npc->receiverTarget && npc->receiverTarget->on_message) {
-        npc->receiverTarget->on_message(npc, msg);
-    }
+// 对比HAND_CARDS结构体
+static int equal_handcards(HAND_CARDS handcards_new, HAND_CARDS handcards_old) {
+    return (
+        handcards_new.cards[0].rank == handcards_old.cards[0].rank && 
+        handcards_new.cards[0].suit == handcards_old.cards[0].suit &&
+        handcards_new.cards[1].rank == handcards_old.cards[1].rank && 
+        handcards_new.cards[1].suit == handcards_old.cards[1].suit
+    );
 }
 
+// 接口函数供外界修改具体对象的数据
+void changePlayerHandcards (int npc_index, HAND_CARDS new_handcards) {
+    if (npc_index == 1) {
+        if (!equal_handcards(new_handcards, npc1.handcards)) {
+            npc1.handcards = new_handcards;
+            sendCommand2Table_NPC_data_update(npc_index, npc1);
+        }
+    } 
+    else if (npc_index == 2) {
+        if (!equal_handcards(new_handcards, npc2.handcards)) {
+            npc1.handcards = new_handcards;
+            sendCommand2Table_NPC_data_update(npc_index, npc2);
+        }
+    } 
+    else if (npc_index == 3) {
+        if (!equal_handcards(new_handcards, npc3.handcards)) {
+            npc1.handcards = new_handcards;
+            sendCommand2Table_NPC_data_update(npc_index, npc3);
+        }
+    } 
+    else if (npc_index == 4) {
+        if (!equal_handcards(new_handcards, player.handcards)) {
+            npc1.handcards = new_handcards;
+            sendCommand2Table_NPC_data_update(npc_index, player);
+        }
+    } 
+
+}

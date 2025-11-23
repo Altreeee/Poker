@@ -32,7 +32,7 @@ Scheduler new_scheduler(void){
 */
 
 // 简易显示
-static void sendCommand2Table_simple (char *content) {
+static void sendCommand2Table_sendcontent (char *content) {
     sendCommand2Table(
         Content_update, 
         (COMMAND_CONTENT_TO_TABLE){
@@ -41,8 +41,41 @@ static void sendCommand2Table_simple (char *content) {
     );
 }
 
+// 简易发手牌
+static void sendCommand2Table_sendhandcard (int npc_index, int handcard1_rank, int handcard1_suit, int handcard2_rank, int handcard2_suit) {
+    sendCommand2Table(
+        Npc_data_update, 
+        (COMMAND_CONTENT_TO_TABLE){
+            .npc_information = {
+                .npc_index = npc_index,
+                .hand_cards = {
+                    .cards = {
+                        {.rank = handcard1_rank, .suit = handcard1_suit},
+                        {.rank = handcard2_rank, .suit = handcard2_suit}
+                    }
+                }
+            }
+        }
+    );
+}
 
-
+// 简易发公共牌
+static void sendCommand2Table_sendpubliccard (int publiccard1_rank, int publiccard1_suit, int publiccard2_rank, int publiccard2_suit, int publiccard3_rank, int publiccard3_suit) {
+    sendCommand2Table(
+        Public_cards_update, 
+        (COMMAND_CONTENT_TO_TABLE){
+            .public_cards_information = {
+                .public_cards = {
+                    .cards = {
+                        {.rank = publiccard1_rank, .suit = publiccard1_suit},
+                        {.rank = publiccard2_rank, .suit = publiccard2_suit},
+                        {.rank = publiccard3_rank, .suit = publiccard3_suit}
+                    }
+                }
+            }
+        }
+    );
+}
 
 GAME_STATE current_game_state = Game_start;
 
@@ -52,14 +85,22 @@ void wakeUpScheduler(void) {
     switch (current_game_state) {
         // 开始
         case Game_start:
-            sendCommand2Table_simple("Game Start(Y/N?)");
+            sendCommand2Table_sendcontent("Game Start(Y/N?)");
             current_game_state = get_Game_start_confirm;
             break;
 
         case get_Game_start_confirm:
             getUserInput(ui_input);
-            // if(ui_input == "Y" || ui_input == "y") {
             if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
+                
+                // 将所有牌+筹码初始化
+                sendCommand2Table_sendhandcard(1, 0, 0, 0, 0);
+                sendCommand2Table_sendhandcard(2, 0, 0, 0, 0);
+                sendCommand2Table_sendhandcard(3, 0, 0, 0, 0);
+                sendCommand2Table_sendhandcard(4, 0, 0, 0, 0);
+
+                sendCommand2Table_sendpubliccard(0, 0, 0, 0, 0, 0);
+
                 current_game_state = Deal_the_hole_cards;
             } 
             else {
@@ -78,7 +119,7 @@ void wakeUpScheduler(void) {
                 一得到一个回信就立刻调用sendCommand2Table将命令装到card_table的队列中，
                 然后接着发送下一个消息并等待回复然后把得到的消息发到card_table模块去更新UI
             */
-            sendCommand2Table_simple("Deal hands(Y/N?)");
+            sendCommand2Table_sendcontent("Deal hands(Y/N?)");
             current_game_state = get_Deal_the_hole_cards_confirm;
             break;
 
@@ -92,62 +133,11 @@ void wakeUpScheduler(void) {
                     // 给每个npc新发两张牌（这里应该去修改npc_controller中保存的npc具体数据，
                     //      然后由npc_controller发送命令更新数据，但是测试阶段跳过这部分，直接向ui发送修改）
                     //      直接发送一个新NPC结构体
-                    sendCommand2Table(
-                        Npc_data_update, 
-                        (COMMAND_CONTENT_TO_TABLE){
-                            .npc_information = {
-                                .npc_index = 1,
-                                .hand_cards = {
-                                    .cards = {
-                                        {.rank = card_t[0].rank, .suit = card_t[0].suit},
-                                        {.rank = card_t[1].rank, .suit = card_t[1].suit}
-                                    }
-                                }
-                            }
-                        }
-                    );
-                    sendCommand2Table(
-                        Npc_data_update, 
-                        (COMMAND_CONTENT_TO_TABLE){
-                            .npc_information = {
-                                .npc_index = 2, // 给下一个npc发牌
-                                .hand_cards = {
-                                    .cards = {
-                                        {.rank = card_t[2].rank, .suit = card_t[2].suit},
-                                        {.rank = card_t[3].rank, .suit = card_t[3].suit}
-                                    }
-                                }
-                            }
-                        }
-                    );
-                    sendCommand2Table(
-                        Npc_data_update, 
-                        (COMMAND_CONTENT_TO_TABLE){
-                            .npc_information = {
-                                .npc_index = 3, // 给下一个npc发牌
-                                .hand_cards = {
-                                    .cards = {
-                                        {.rank = card_t[4].rank, .suit = card_t[4].suit},
-                                        {.rank = card_t[5].rank, .suit = card_t[5].suit}
-                                    }
-                                }
-                            }
-                        }
-                    );
-                    sendCommand2Table(
-                        Npc_data_update, 
-                        (COMMAND_CONTENT_TO_TABLE){
-                            .npc_information = {
-                                .npc_index = 4, // 给玩家发牌
-                                .hand_cards = {
-                                    .cards = {
-                                        {.rank = card_t[6].rank, .suit = card_t[6].suit},
-                                        {.rank = card_t[7].rank, .suit = card_t[7].suit}
-                                    }
-                                }
-                            }
-                        }
-                    );
+                    sendCommand2Table_sendhandcard(1, card_t[0].rank, card_t[0].suit, card_t[1].rank, card_t[1].suit);
+                    sendCommand2Table_sendhandcard(2, card_t[2].rank, card_t[2].suit, card_t[3].rank, card_t[3].suit);
+                    sendCommand2Table_sendhandcard(3, card_t[4].rank, card_t[4].suit, card_t[5].rank, card_t[5].suit);
+                    sendCommand2Table_sendhandcard(4, card_t[6].rank, card_t[6].suit, card_t[7].rank, card_t[7].suit);
+                    
                     free(card_t);
                 }
                 current_game_state = Deal_the_flop;
@@ -164,7 +154,7 @@ void wakeUpScheduler(void) {
         // 翻公共牌
         case Deal_the_flop:
             // 翻开3张公共牌
-            sendCommand2Table_simple("Deal flops(Y/N?)");
+            sendCommand2Table_sendcontent("Deal flops(Y/N?)");
             current_game_state = get_Deal_the_flop_confirm;
             break;
 
@@ -204,7 +194,7 @@ void wakeUpScheduler(void) {
 
 
         case Deal_the_turn:
-            sendCommand2Table_simple("Deal_the_flop");
+            sendCommand2Table_sendcontent("Deal_the_flop");
             
             current_game_state = Game_start;
             break;

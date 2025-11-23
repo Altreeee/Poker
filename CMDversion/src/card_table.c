@@ -46,6 +46,9 @@ HAND_CARDS handcard1 = {0}, handcard2 = {0}, handcard3 = {0}; // 3个NPC的初�
 HAND_CARDS handcardPlayer = {0}; // 玩家初始手牌
 PUBLIC_CARDS publiccards = {0}; // 公共牌
 
+int chips_npc1, chips_npc2, chips_npc3, chips_player, chips_public = 0; // 筹码：3个npc、玩家、剩余总筹码
+char bufnpc1_chip[100], bufnpc2_chip[100], bufnpc3_chip[100], bufplayer_chip[100], bufpublic_chip[100]; // 存放显示筹码行
+
 
 // 通用接口函数(给其它模块调用)
 /*
@@ -87,38 +90,43 @@ void getUserInput(char* ui_input) {
 
 
 // 在公共牌 publiccards 发生改变后更新显示
-static void update_publiccards() {
+static void update_public() {
     sprintf(bufPublic_1, "PublicCard 1: %d, %d", publiccards.cards[0].rank, publiccards.cards[0].suit);
     sprintf(bufPublic_2, "PublicCard 2: %d, %d", publiccards.cards[1].rank, publiccards.cards[1].suit);
     sprintf(bufPublic_3, "PublicCard 3: %d, %d", publiccards.cards[2].rank, publiccards.cards[2].suit);
-    const char *linesPublic[] = { bufPublic_1, bufPublic_2, bufPublic_3 };
-    updateBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, linesPublic, 3);
+    sprintf(bufpublic_chip, "Chips: %d", chips_public);
+    const char *linesPublic[] = { bufPublic_1, bufPublic_2, bufPublic_3, bufpublic_chip };
+    updateBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, linesPublic, 4);
 }
 // 在NPC1\2\3手牌 handcard1\2\3 发生改变后更新显示
-static void update_npc1_handcards() {
+static void update_npc1() {
     sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit);
     sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
-    const char *linesA[] = { buf1_1, buf1_2 };
-    updateBox(2, 2, boxWidth, boxHeight, linesA, 2);
+    sprintf(bufnpc1_chip, "Chips: %d", chips_npc1);
+    const char *linesA[] = { buf1_1, buf1_2, bufnpc1_chip };
+    updateBox(2, 2, boxWidth, boxHeight, linesA, 3);
 }
-static void update_npc2_handcards() {
+static void update_npc2() {
     sprintf(buf2_1, "HandCard 1: %d, %d", handcard2.cards[0].rank, handcard2.cards[0].suit);
     sprintf(buf2_2, "HandCard 2: %d, %d", handcard2.cards[1].rank, handcard2.cards[1].suit);
-    const char *linesB[] = { buf2_1, buf2_2 };
-    updateBox(32, 2, boxWidth, boxHeight, linesB, 2);
+    sprintf(bufnpc2_chip, "Chips: %d", chips_npc2);
+    const char *linesB[] = { buf2_1, buf2_2, bufnpc2_chip };
+    updateBox(32, 2, boxWidth, boxHeight, linesB, 3);
 }
-static void update_npc3_handcards() {
+static void update_npc3() {
     sprintf(buf3_1, "HandCard 1: %d, %d", handcard3.cards[0].rank, handcard3.cards[0].suit);
     sprintf(buf3_2, "HandCard 2: %d, %d", handcard3.cards[1].rank, handcard3.cards[1].suit);
-    const char *linesC[] = { buf3_1, buf3_2 };
-    updateBox(62, 2, boxWidth, boxHeight, linesC, 2);
+    sprintf(bufnpc3_chip, "Chips: %d", chips_npc3);
+    const char *linesC[] = { buf3_1, buf3_2, bufnpc3_chip };
+    updateBox(62, 2, boxWidth, boxHeight, linesC, 3);
 }
 // 在玩家手牌 handcardPlayer 发生改变后更新显示
-static void update_player_handcards() {
+static void update_player() {
     sprintf(bufPlayer_1, "HandCard 1: %d, %d", handcardPlayer.cards[0].rank, handcardPlayer.cards[0].suit);
     sprintf(bufPlayer_2, "HandCard 2: %d, %d", handcardPlayer.cards[1].rank, handcardPlayer.cards[1].suit);
-    const char *linesPlayer[] = { bufPlayer_1, bufPlayer_2 };
-    updateBox(62, 2 + boxHeight + 4, boxWidth, boxHeight, linesPlayer, 2);
+    sprintf(bufplayer_chip, "Chips: %d", chips_player);
+    const char *linesPlayer[] = { bufPlayer_1, bufPlayer_2, bufplayer_chip };
+    updateBox(62, 2 + boxHeight + 4, boxWidth, boxHeight, linesPlayer, 3);
 }
 // 在通知 bufCommunicateContent 发生改变后更新显示
 static void update_communication_content() {
@@ -138,19 +146,19 @@ static void processCommands(void) {
                 /* npc数据更新逻辑 */ 
                 if (msg.msgcontent.npc_information.npc_index == 1){
                     handcard1 = msg.msgcontent.npc_information.hand_cards;
-                    update_npc1_handcards();
+                    update_npc1();
                 }
                 else if (msg.msgcontent.npc_information.npc_index == 2){
                     handcard2 = msg.msgcontent.npc_information.hand_cards;
-                    update_npc2_handcards();
+                    update_npc2();
                 }
                 else if (msg.msgcontent.npc_information.npc_index == 3){
                     handcard3 = msg.msgcontent.npc_information.hand_cards;
-                    update_npc3_handcards();
+                    update_npc3();
                 }
                 else if (msg.msgcontent.npc_information.npc_index == 4){
                     handcardPlayer = msg.msgcontent.npc_information.hand_cards;
-                    update_player_handcards();
+                    update_player();
                 }
                 break;
 
@@ -166,7 +174,7 @@ static void processCommands(void) {
             case Public_cards_update:
                 /* 更新公共牌数据 */
                 publiccards = msg.msgcontent.public_cards_information.public_cards;
-                update_publiccards();
+                update_public();
                 break;
 
             default: break;
@@ -192,25 +200,31 @@ void initUI(void){
     */
     sprintf(buf1_1, "HandCard 1: %d, %d", handcard1.cards[0].rank, handcard1.cards[0].suit); // NPC 1的手牌1（现在先把花色用数字代替（还没知道怎么直接把枚举类型的名字写出来））
     sprintf(buf1_2, "HandCard 2: %d, %d", handcard1.cards[1].rank, handcard1.cards[1].suit);
-    const char *linesA[] = { buf1_1, buf1_2 };
+    sprintf(bufnpc1_chip, "Chips: %d", chips_npc1);
+    const char *linesA[] = { buf1_1, buf1_2, bufnpc1_chip };
+
     sprintf(buf2_1, "HandCard 1: %d, %d", handcard2.cards[0].rank, handcard2.cards[0].suit);
     sprintf(buf2_2, "HandCard 2: %d, %d", handcard2.cards[1].rank, handcard2.cards[1].suit);
-    const char *linesB[] = { buf2_1, buf2_2 };
+    sprintf(bufnpc2_chip, "Chips: %d", chips_npc2);
+    const char *linesB[] = { buf2_1, buf2_2, bufnpc2_chip };
+
     sprintf(buf3_1, "HandCard 1: %d, %d", handcard3.cards[0].rank, handcard3.cards[0].suit);
     sprintf(buf3_2, "HandCard 2: %d, %d", handcard3.cards[1].rank, handcard3.cards[1].suit);
-    const char *linesC[] = { buf3_1, buf3_2 };
+    sprintf(bufnpc3_chip, "Chips: %d", chips_npc3);
+    const char *linesC[] = { buf3_1, buf3_2, bufnpc3_chip };
 
-    updateBox(2, 2, boxWidth, boxHeight, linesA, 2);
-    updateBox(32, 2, boxWidth, boxHeight, linesB, 2);
-    updateBox(62, 2, boxWidth, boxHeight, linesC, 2);
+    updateBox(2, 2, boxWidth, boxHeight, linesA, 3);
+    updateBox(32, 2, boxWidth, boxHeight, linesB, 3);
+    updateBox(62, 2, boxWidth, boxHeight, linesC, 3);
 
     /*
         初始化玩家部分ui显示
     */
     sprintf(bufPlayer_1, "HandCard 1: %d, %d", handcardPlayer.cards[0].rank, handcardPlayer.cards[0].suit);
     sprintf(bufPlayer_2, "HandCard 2: %d, %d", handcardPlayer.cards[1].rank, handcardPlayer.cards[1].suit);
-    const char *linesPlayer[] = { bufPlayer_1, bufPlayer_2 };
-    updateBox(62, 2 + boxHeight + 4, boxWidth, boxHeight, linesPlayer, 2);
+    sprintf(bufplayer_chip, "Chips: %d", chips_player);
+    const char *linesPlayer[] = { bufPlayer_1, bufPlayer_2, bufplayer_chip };
+    updateBox(62, 2 + boxHeight + 4, boxWidth, boxHeight, linesPlayer, 3);
 
     /*
         初始化公共牌部分ui显示
@@ -218,8 +232,9 @@ void initUI(void){
     sprintf(bufPublic_1, "PublicCard 1: %d, %d", publiccards.cards[0].rank, publiccards.cards[0].suit);
     sprintf(bufPublic_2, "PublicCard 2: %d, %d", publiccards.cards[1].rank, publiccards.cards[1].suit);
     sprintf(bufPublic_3, "PublicCard 3: %d, %d", publiccards.cards[2].rank, publiccards.cards[2].suit);
-    const char *linesPublic[] = { bufPublic_1, bufPublic_2, bufPublic_3 };
-    updateBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, linesPublic, 3);
+    sprintf(bufpublic_chip, "Chips: %d", chips_public);
+    const char *linesPublic[] = { bufPublic_1, bufPublic_2, bufPublic_3, bufpublic_chip };
+    updateBox(2, 2 + boxHeight + 4, boxWidth, boxHeight, linesPublic, 4);
 
     /*
         初始化沟通栏部分ui显示
