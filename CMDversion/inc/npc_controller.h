@@ -13,7 +13,7 @@
 
 typedef struct {
     char name[10]; // npc名称
-    HandCards hand_cards; // 手牌
+    HAND_CARDS hand_cards; // 手牌
     int chips; // 筹码数
     IMessageReceiver receiveMessageFromDealer; // 消息接收器
 

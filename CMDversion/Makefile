@@ -2,12 +2,12 @@
 CC = gcc
 
 # 编译选项
-CFLAGS = -Wall -Wextra -std=c11 -g
+CFLAGS = -Wall -Wextra -Iinc -std=c11 -g
 
 # 项目结构
 # 最终生成./game可执行文件
 TARGET = test_cardtable
-SRC = Debug.c card_table.c scheduler.c card_sender.c dice_roller.c
+SRC = src/Debug.c src/card_table.c src/scheduler.c src/card_sender.c src/dice_roller.c
 OBJ = $(SRC:.c=.o)
 
 # 默认目标
