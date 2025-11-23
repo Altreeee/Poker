@@ -146,18 +146,22 @@ static void processCommands(void) {
                 /* npc数据更新逻辑 */ 
                 if (msg.msgcontent.npc_information.npc_index == 1){
                     handcard1 = msg.msgcontent.npc_information.hand_cards;
+                    chips_npc1 = msg.msgcontent.npc_information.chips;
                     update_npc1();
                 }
                 else if (msg.msgcontent.npc_information.npc_index == 2){
                     handcard2 = msg.msgcontent.npc_information.hand_cards;
+                    chips_npc2 = msg.msgcontent.npc_information.chips;
                     update_npc2();
                 }
                 else if (msg.msgcontent.npc_information.npc_index == 3){
                     handcard3 = msg.msgcontent.npc_information.hand_cards;
+                    chips_npc3 = msg.msgcontent.npc_information.chips;
                     update_npc3();
                 }
                 else if (msg.msgcontent.npc_information.npc_index == 4){
                     handcardPlayer = msg.msgcontent.npc_information.hand_cards;
+                    chips_player = msg.msgcontent.npc_information.chips;
                     update_player();
                 }
                 break;
@@ -174,6 +178,12 @@ static void processCommands(void) {
             case Public_cards_update:
                 /* 更新公共牌数据 */
                 publiccards = msg.msgcontent.public_cards_information.public_cards;
+                update_public();
+                break;
+
+            case Public_chips_update:
+                /* 更新公共筹码数据 */
+                chips_public = msg.msgcontent.public_chips;
                 update_public();
                 break;
 

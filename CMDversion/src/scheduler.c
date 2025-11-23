@@ -7,6 +7,7 @@
 #include "scheduler.h"
 #include "card_table.h"
 #include "card_sender.h"
+#include "npc_controller.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -42,18 +43,13 @@ static void sendCommand2Table_sendcontent (char *content) {
 }
 
 // 简易发手牌
-static void sendCommand2Table_sendhandcard (int npc_index, int handcard1_rank, int handcard1_suit, int handcard2_rank, int handcard2_suit) {
-    sendCommand2Table(
-        Npc_data_update, 
-        (COMMAND_CONTENT_TO_TABLE){
-            .npc_information = {
-                .npc_index = npc_index,
-                .hand_cards = {
-                    .cards = {
-                        {.rank = handcard1_rank, .suit = handcard1_suit},
-                        {.rank = handcard2_rank, .suit = handcard2_suit}
-                    }
-                }
+static void changePlayerHandcards_simple (int npc_index, int handcard1_rank, int handcard1_suit, int handcard2_rank, int handcard2_suit) {
+    changePlayerHandcards(
+        npc_index, 
+        (HAND_CARDS){
+            .cards = {
+                {.rank = handcard1_rank, .suit = handcard1_suit},
+                {.rank = handcard2_rank, .suit = handcard2_suit}
             }
         }
     );
@@ -77,6 +73,9 @@ static void sendCommand2Table_sendpubliccard (int publiccard1_rank, int publicca
     );
 }
 
+
+
+
 GAME_STATE current_game_state = Game_start;
 
 void wakeUpScheduler(void) {
@@ -94,10 +93,16 @@ void wakeUpScheduler(void) {
             if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
                 
                 // 将所有牌+筹码初始化
-                sendCommand2Table_sendhandcard(1, 0, 0, 0, 0);
-                sendCommand2Table_sendhandcard(2, 0, 0, 0, 0);
-                sendCommand2Table_sendhandcard(3, 0, 0, 0, 0);
-                sendCommand2Table_sendhandcard(4, 0, 0, 0, 0);
+                changePlayerHandcards_simple(1, 0, 0, 0, 0);
+                changePlayerHandcards_simple(2, 0, 0, 0, 0);
+                changePlayerHandcards_simple(3, 0, 0, 0, 0);
+                changePlayerHandcards_simple(4, 0, 0, 0, 0);
+
+                // 每个人筹码归零
+                changePlayerChips(1,0);
+                changePlayerChips(2,0);
+                changePlayerChips(3,0);
+                changePlayerChips(4,0);
 
                 sendCommand2Table_sendpubliccard(0, 0, 0, 0, 0, 0);
 
@@ -133,10 +138,16 @@ void wakeUpScheduler(void) {
                     // 给每个npc新发两张牌（这里应该去修改npc_controller中保存的npc具体数据，
                     //      然后由npc_controller发送命令更新数据，但是测试阶段跳过这部分，直接向ui发送修改）
                     //      直接发送一个新NPC结构体
-                    sendCommand2Table_sendhandcard(1, card_t[0].rank, card_t[0].suit, card_t[1].rank, card_t[1].suit);
-                    sendCommand2Table_sendhandcard(2, card_t[2].rank, card_t[2].suit, card_t[3].rank, card_t[3].suit);
-                    sendCommand2Table_sendhandcard(3, card_t[4].rank, card_t[4].suit, card_t[5].rank, card_t[5].suit);
-                    sendCommand2Table_sendhandcard(4, card_t[6].rank, card_t[6].suit, card_t[7].rank, card_t[7].suit);
+                    changePlayerHandcards_simple(1, card_t[0].rank, card_t[0].suit, card_t[1].rank, card_t[1].suit);
+                    changePlayerHandcards_simple(2, card_t[2].rank, card_t[2].suit, card_t[3].rank, card_t[3].suit);
+                    changePlayerHandcards_simple(3, card_t[4].rank, card_t[4].suit, card_t[5].rank, card_t[5].suit);
+                    changePlayerHandcards_simple(4, card_t[6].rank, card_t[6].suit, card_t[7].rank, card_t[7].suit);
+
+                    // 给每个人发10块筹码（测试用）
+                    changePlayerChips(1,10);
+                    changePlayerChips(2,10);
+                    changePlayerChips(3,10);
+                    changePlayerChips(4,10);
                     
                     free(card_t);
                 }

@@ -9,25 +9,9 @@
 #include "config/card.h"
 
 
+void changePlayerHandcards (int npc_index, HAND_CARDS new_handcards);
+void changePlayerChips (int npc_index, int new_chips);
 
-
-typedef struct {
-    char name[10]; // npc名称
-    HAND_CARDS hand_cards; // 手牌
-    int chips; // 筹码数
-    IMessageReceiver receiveMessageFromDealer; // 消息接收器
-
-    IMessageReceiver *receiverTarget; // 消息发送器
-    void (*sendMessageToDealer)(void *self, const char *msg); // 发送消息给 dealer 的函数指针
-} NPC;
-
-/* 构造函数 */
-NPC new_npc(const char *name, int chips);
-
-// NPC 接收来自 dealer 的消息处理函数
-void on_npc_message(void *self, const MSG* msg);
-
-void sendMessage2Dealer (void *self, const char *msg);
 
 
 #endif // NPC_CONTROLLER_H

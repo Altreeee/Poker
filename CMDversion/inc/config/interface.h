@@ -68,6 +68,7 @@ typedef struct {
 typedef struct {
     int npc_index; //1、2、3
     HAND_CARDS hand_cards;
+    int chips;
 } NPC_INFORMATION;
 
 /**
@@ -90,12 +91,14 @@ typedef enum {
     Npc_data_update, // 更新npc数据
     Content_update,  // 更新通知显示数据
     Public_cards_update, // 更新公共牌数据
+    Public_chips_update, // 更新公共筹码数据
 } COMMAND_TYPE_TO_TABLE;
 
 typedef union {
     NPC_INFORMATION npc_information; // 如果消息类型是Npc_data_update，直接传输新的NPC结构体过去
     COMMUNICATE_INFORMATION content_information; // 向ui传输显示通知的内容
     PUBLIC_CARDS_INFORMATION public_cards_information; // 如果消息类型是Public_cards_update，直接传新的公共牌过去
+    int public_chips; // 如果消息类型是Public_chips_update，直接传新的公共筹码数
 }  COMMAND_CONTENT_TO_TABLE;
 
 /**
