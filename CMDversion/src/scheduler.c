@@ -12,6 +12,7 @@
 #include <string.h>
 
 char ui_input[100]; // 存储从ui传来的用户输入内容
+int public_chip = 0; // 公共筹码由scheduler管理
 
 /*
 // 向绑定的第index个模块发送消息
@@ -98,7 +99,8 @@ void wakeUpScheduler(void) {
                 changePlayerHandcards_simple(3, 0, 0, 0, 0);
                 changePlayerHandcards_simple(4, 0, 0, 0, 0);
 
-                // 每个人筹码归零
+                // 向npc_controller发送消息，让其准备好每个人的筹码
+                //（如果上一局npc的筹码仍然足够最低入局数，则继续使用，如果在牌局中归零，或者再开局时低于最低入局数，则生成一个新的npc）
                 changePlayerChips(1,0);
                 changePlayerChips(2,0);
                 changePlayerChips(3,0);
@@ -135,9 +137,7 @@ void wakeUpScheduler(void) {
                 new_cards_num = 8;
                 card_t = cardsenderProcesser(new_cards_num);
                 if (card_t){
-                    // 给每个npc新发两张牌（这里应该去修改npc_controller中保存的npc具体数据，
-                    //      然后由npc_controller发送命令更新数据，但是测试阶段跳过这部分，直接向ui发送修改）
-                    //      直接发送一个新NPC结构体
+                    // 给每个npc新发两张牌，修改npc_controller中保存的npc具体数据，然后由npc_controller发送命令更新数据
                     changePlayerHandcards_simple(1, card_t[0].rank, card_t[0].suit, card_t[1].rank, card_t[1].suit);
                     changePlayerHandcards_simple(2, card_t[2].rank, card_t[2].suit, card_t[3].rank, card_t[3].suit);
                     changePlayerHandcards_simple(3, card_t[4].rank, card_t[4].suit, card_t[5].rank, card_t[5].suit);

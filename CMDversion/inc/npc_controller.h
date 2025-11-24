@@ -10,7 +10,7 @@
 
 
 void changePlayerHandcards (int npc_index, HAND_CARDS new_handcards);
-void changePlayerChips (int npc_index, int new_chips);
+void changePlayerChips (int npc_index, int change_chip);
 
 
 

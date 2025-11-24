@@ -4,6 +4,9 @@
 #include <string.h>
 #include <stdio.h>
 
+#define numberOfNPCs 4 // 总人数（NPC+玩家）
+
+
 typedef struct {
     const int npc_index; // 1\2\3:npc, 4: player
     HAND_CARDS handcards;
@@ -17,7 +20,18 @@ static NPC npc3 = {.npc_index = 3};
 
 static NPC player = {.npc_index = 4};
 
+NPC *all_players[] = {&npc1, &npc2, &npc3, &player};
 
+// 通过npc_index找到对应的对象
+static NPC* findPlayerIndex (NPC* all_players[], int npc_index) {
+    int i;
+    for (i = 0; i < numberOfNPCs; ++i) {
+        if (all_players[i]->npc_index == npc_index) {
+            return all_players[i];
+        }
+    }
+    return NULL;
+}
 
 // 向UI更新新的NPC数据
 static void sendCommand2Table_NPC_data_update (NPC update_target) {
@@ -45,56 +59,35 @@ static int equal_handcards(HAND_CARDS handcards_new, HAND_CARDS handcards_old) {
 
 // 接口函数供外界修改具体对象的数据
 void changePlayerHandcards (int npc_index, HAND_CARDS new_handcards) {
-    if (npc_index == 1) {
-        if (!equal_handcards(new_handcards, npc1.handcards)) {
-            npc1.handcards = new_handcards;
-            sendCommand2Table_NPC_data_update(npc1);
+    
+    NPC* targetNPC = findPlayerIndex(all_players, npc_index);
+    if (targetNPC != NULL) {
+        if (!equal_handcards(new_handcards, targetNPC->handcards)) {
+            targetNPC->handcards = new_handcards;
+            sendCommand2Table_NPC_data_update(*targetNPC);
         }
-    } 
-    else if (npc_index == 2) {
-        if (!equal_handcards(new_handcards, npc2.handcards)) {
-            npc2.handcards = new_handcards;
-            sendCommand2Table_NPC_data_update(npc2);
+    }
+    
+}
+
+// change_chip 代表更改筹码的方向，正数代表加筹码，负数代表扣除筹码
+void changePlayerChips (int npc_index, int change_chip) {
+
+    NPC* targetNPC = findPlayerIndex(all_players, npc_index);
+    if (targetNPC != NULL) {
+        targetNPC->chips += change_chip;
+        if (targetNPC->chips <= 0) {
+            targetNPC->chips = 0;
+            /*
+                To DO: 筹码归零后要通知schedule，做出局准备
+            */
+            sendCommand2Table_NPC_data_update(*targetNPC);
         }
-    } 
-    else if (npc_index == 3) {
-        if (!equal_handcards(new_handcards, npc3.handcards)) {
-            npc3.handcards = new_handcards;
-            sendCommand2Table_NPC_data_update(npc3);
-        }
-    } 
-    else if (npc_index == 4) {
-        if (!equal_handcards(new_handcards, player.handcards)) {
-            player.handcards = new_handcards;
-            sendCommand2Table_NPC_data_update(player);
-        }
-    } 
+    }
 
 }
 
-void changePlayerChips (int npc_index, int new_chips) {
-    if (npc_index == 1) {
-        if (npc1.chips != new_chips) {
-            npc1.chips = new_chips;
-            sendCommand2Table_NPC_data_update(npc1);
-        }
-    } 
-    else if (npc_index == 2) {
-        if (npc2.chips != new_chips) {
-            npc2.chips = new_chips;
-            sendCommand2Table_NPC_data_update(npc2);
-        }
-    } 
-    else if (npc_index == 3) {
-        if (npc3.chips != new_chips) {
-            npc3.chips = new_chips;
-            sendCommand2Table_NPC_data_update(npc3);
-        }
-    } 
-    else if (npc_index == 4) {
-        if (player.chips != new_chips) {
-            player.chips = new_chips;
-            sendCommand2Table_NPC_data_update(player);
-        }
-    } 
+
+void initNPC (int npc_index) {
+
 }
