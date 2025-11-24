@@ -34,6 +34,16 @@ typedef enum {
     Deal_the_turn,       // 发转牌，翻开第四张公共牌
     Deal_the_river,      // 发河牌，翻开第五张公共牌
     Showdown,            // 摊牌，开始比牌大小
+
+    NPC1_in,
+    NPC2_in,
+    NPC3_in,
+    Player_in,
+
+    send_Hand_card_NPC1,
+    send_Hand_card_NPC2,
+    send_Hand_card_NPC3,
+    send_Hand_card_player,
 } GAME_STATE;
 
 /**

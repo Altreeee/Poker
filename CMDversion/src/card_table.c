@@ -259,7 +259,7 @@ void startContinuousRunUI(void){
         // 调度器依次唤醒其它模块
         wakeUpScheduler();
         processCommands();
-        SLEEP_MS(300);
+        SLEEP_MS(600);
     }
 }
 

@@ -3,6 +3,7 @@
 #include "card_table.h"
 #include <string.h>
 #include <stdio.h>
+#include "dice_roller.h"
 
 #define numberOfNPCs 4 // 总人数（NPC+玩家）
 
@@ -67,7 +68,7 @@ void changePlayerHandcards (int npc_index, HAND_CARDS new_handcards) {
             sendCommand2Table_NPC_data_update(*targetNPC);
         }
     }
-    
+
 }
 
 // change_chip 代表更改筹码的方向，正数代表加筹码，负数代表扣除筹码
@@ -81,13 +82,18 @@ void changePlayerChips (int npc_index, int change_chip) {
             /*
                 To DO: 筹码归零后要通知schedule，做出局准备
             */
-            sendCommand2Table_NPC_data_update(*targetNPC);
         }
+        sendCommand2Table_NPC_data_update(*targetNPC);
     }
 
 }
 
 
-void initNPC (int npc_index) {
-
+void initNPC_chip (int npc_index) {
+    int init_chip = generateRandomNumber(100, 10000);
+    NPC* targetNPC = findPlayerIndex(all_players, npc_index);
+    if (targetNPC != NULL) {
+        targetNPC->chips = init_chip;
+        sendCommand2Table_NPC_data_update(*targetNPC);
+    }
 }
