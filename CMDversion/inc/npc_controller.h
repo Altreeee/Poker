@@ -12,6 +12,13 @@
 void changePlayerHandcards (int npc_index, HAND_CARDS new_handcards);
 void changePlayerChips (int npc_index, int change_chip);
 void initNPC_chip (int npc_index);
+Betting_Decision ask_decision (int current_index, PUBLIC_CARDS public_cards);
 
+
+typedef struct {
+    const int npc_index; // 1\2\3:npc, 4: player
+    HAND_CARDS handcards;
+    int chips;
+} NPC;
 
 #endif // NPC_CONTROLLER_H

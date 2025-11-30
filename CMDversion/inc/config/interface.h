@@ -29,10 +29,21 @@ typedef enum {
     Shuffle,             // 洗牌
     Deal_the_hole_cards, // 发底牌, 每人发两张手牌
     get_Deal_the_hole_cards_confirm,
-    Deal_the_flop,       // 发翻牌，翻开三张公共牌
-    get_Deal_the_flop_confirm,
-    Deal_the_turn,       // 发转牌，翻开第四张公共牌
-    Deal_the_river,      // 发河牌，翻开第五张公共牌
+
+    Deal_the_first_publiccard,       // 发翻牌，翻开三张公共牌
+    Deal_the_second_publiccard,
+    Deal_the_third_publiccard,
+    get_Deal_first_publiccard_confirm,
+    get_Deal_second_publiccard_confirm,
+    get_Deal_third_publiccard_confirm,
+
+    Draw_for_the_big_blind, // 抽大盲注id
+    collect_bigblind_chip, // 扣除大盲注筹码
+
+
+    First_betting_round, // 第一轮下注
+    get_First_betting_round_confirm,
+
     Showdown,            // 摊牌，开始比牌大小
 
     NPC1_in,
@@ -129,5 +140,32 @@ typedef struct {
 typedef struct IMessageReceiver {
     void (*on_message)(void *self, MSG *msg);
 } IMessageReceiver;
+
+
+/**
+ * 决定，弃牌（放弃本局）、跟注（跟上大盲注金额）、加注（增加下注额）
+ */
+typedef enum {
+    Fold, // 弃牌
+    Call, // 跟注
+    Raise, // 加注
+} Decision_Type;
+
+#define NOT_RAISE_TYPE -1
+
+typedef struct {
+    Decision_Type decison_type;
+    int raise_num; // 如果不是加注，则为-1, 使用时首先检测raise_num != NOT_RAISE_TYPE
+} Betting_Decision;
+
+
+
+
+
+
+
+
+
+
 
 #endif

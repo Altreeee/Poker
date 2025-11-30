@@ -1,20 +1,25 @@
-#include "dealer.h"
-#include "npc_controller.h"
+#include "card_table.h"
+#include "config/interface.h"
+#include "card_sender.h"
+#include "scheduler.h"
+#include <time.h>
+#include <stdlib.h>
 
 
+int main(){
+    /*
+    //创建实例
+    CardSender cardsender = new_cardsender();
+    Scheduler scheduler = new_scheduler();
 
-int main() {
-    // 创建 dealer 和 npc 实例
-    Dealer dealer = new_dealer();
-    NPC npc = new_npc("Alice", 100);
+    // 将scheduler的第0个send_target设置为指向cardsender的消息接收接口
+    scheduler.send_target[0] = &cardsender.msg_recive_interface;
+    */
+    
+    // 使用当前时间作为随机数种子
+    srand((unsigned int)time(NULL)); // 注意不要多次重复初始化随机数种子，只在main函数中做一次
 
-    /**
-     * 消息处理部分
-     */
-    // dealer和npc双向绑定
-    dealer.receiverTarget = &npc.receiveMessageFromDealer;
-    npc.receiverTarget = &dealer.receiveMessageFromNPC;
-    // 测试消息互发
-    dealer.sendMessage2npc(&dealer, "Hello NPC!");
-    npc.sendMessageToDealer(&npc, "Hello Dealer!");
+    initUI();
+    startContinuousRunUI();
+    return 0;
 }

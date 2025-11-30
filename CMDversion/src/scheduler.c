@@ -11,10 +11,13 @@
 #include <stdlib.h>
 #include <string.h>
 #include "dice_roller.h"
+#include <stdio.h>
 
 char ui_input[100]; // 存储从ui传来的用户输入内容
 int public_chip = 0; // 公共筹码由scheduler管理
 PUBLIC_CARDS public_cards = {0}; // 公共牌由scheduler管理
+
+int id_chosen = 0; // 大盲注id号，初始化为0，使用值应为1-4
 
 /*
 // 向绑定的第index个模块发送消息
@@ -58,8 +61,8 @@ static void changePlayerHandcards_simple (int npc_index, int handcard1_rank, int
     );
 }
 
-// 简易发公共牌
-static void sendCommand2Table_sendpubliccard (PUBLIC_CARDS public_cards) {
+// 简易更改公共牌
+static void sendCommand2Table_sendpubliccard () {
     sendCommand2Table(
         Public_cards_update, 
         (COMMAND_CONTENT_TO_TABLE){
@@ -70,7 +73,15 @@ static void sendCommand2Table_sendpubliccard (PUBLIC_CARDS public_cards) {
     );
 }
 
-
+// 简易更改公共筹码数
+static void updatePublicChips () {
+    sendCommand2Table(
+        Public_chips_update, 
+        (COMMAND_CONTENT_TO_TABLE){
+            .public_chips = public_chip
+        }
+    );
+}
 
 
 GAME_STATE current_game_state = Game_start;
@@ -105,7 +116,9 @@ void wakeUpScheduler(void) {
                 changePlayerChips(4,-9999);
 
                 memset(&public_cards, 0, sizeof(public_cards)); // 将公共牌清零
-                sendCommand2Table_sendpubliccard(public_cards);
+                sendCommand2Table_sendpubliccard();
+
+                id_chosen = 0; // 初始化大盲注id
 
                 current_game_state = NPC1_in;
             } 
@@ -150,7 +163,7 @@ void wakeUpScheduler(void) {
                 一得到一个回信就立刻调用sendCommand2Table将命令装到card_table的队列中，
                 然后接着发送下一个消息并等待回复然后把得到的消息发到card_table模块去更新UI
             */
-            sendCommand2Table_sendcontent("Deal hands(Y/N?)");
+            sendCommand2Table_sendcontent("Deal hands?");
             current_game_state = get_Deal_the_hole_cards_confirm;
             break;
 
@@ -198,7 +211,67 @@ void wakeUpScheduler(void) {
                 changePlayerHandcards_simple(4, card_t[0].rank, card_t[0].suit, card_t[1].rank, card_t[1].suit);
                 free(card_t);
             }
-            current_game_state = Deal_the_flop;
+            current_game_state = Draw_for_the_big_blind;
+            break;
+
+
+
+
+
+
+        /*
+            抽大盲注id
+        */
+        case Draw_for_the_big_blind:
+            id_chosen = generateRandomNumber(1,4);
+            char str[100];
+            if (id_chosen != 4) {
+                sprintf(str, "big blind is NPC%d", id_chosen);
+            }
+            else {
+                sprintf(str, "big blind is you");
+            }
+            sendCommand2Table_sendcontent(str);
+            current_game_state = collect_bigblind_chip;
+            break;
+        // 扣大盲注筹码
+        case collect_bigblind_chip:
+            changePlayerChips(id_chosen, -10);
+            public_chip += 10;
+            current_game_state = First_betting_round;
+            updatePublicChips();
+            break;
+
+        
+        // 第一轮下注
+        case First_betting_round:
+            sendCommand2Table_sendcontent("Start first betting round");
+            current_game_state = get_First_betting_round_confirm;
+            break;
+        case get_First_betting_round_confirm:
+            getUserInput(ui_input);
+            if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
+                /* 依次询问玩家决定：弃牌（放弃本局）、跟注（跟上大盲注金额）、加注（增加下注额） */
+                int i;
+                int current_index;
+                for (i = 0; i < 4; ++i) {
+                    current_index = (id_chosen + i - 1)%4 + 1;
+                    Betting_Decision begging_decision;
+                    begging_decision = ask_decision (current_index, public_cards);
+                    if (begging_decision.decison_type == Fold) {
+
+                    } else if (begging_decision.decison_type == Call) {
+
+                    } else {
+                        // Raise 加注
+
+                    }
+                }
+                current_game_state = Deal_the_first_publiccard;
+            }
+            else {
+                current_game_state = get_First_betting_round_confirm;
+            }
             break;
 
 
@@ -208,29 +281,74 @@ void wakeUpScheduler(void) {
         /*
             翻公共牌
         */
-        case Deal_the_flop:
-            // 翻开3张公共牌
-            sendCommand2Table_sendcontent("Deal flops(Y/N?)");
-            current_game_state = get_Deal_the_flop_confirm;
+        // 翻开第一张张公共牌
+        case Deal_the_first_publiccard:
+            sendCommand2Table_sendcontent("Deal 1st flops?");
+            current_game_state = get_Deal_first_publiccard_confirm;
             break;
 
-        case get_Deal_the_flop_confirm:
+        case get_Deal_first_publiccard_confirm:
             getUserInput(ui_input);
             if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
-                new_cards_num = 3;
+                new_cards_num = 1;
                 card_t = cardsenderProcesser(new_cards_num);
-                int i;
                 
-                for (i = 0; i < 3; ++i) {
-                    public_cards.cards[i] = card_t[i];
-                }
-                sendCommand2Table_sendpubliccard(public_cards);
-                
+                public_cards.cards[0] = card_t[0];
 
-                current_game_state = Deal_the_turn;
+                sendCommand2Table_sendpubliccard();
+                
+                current_game_state = Deal_the_second_publiccard;
             }
             else {
-                current_game_state = get_Deal_the_flop_confirm;
+                current_game_state = get_Deal_first_publiccard_confirm;
+            }
+            break;
+        
+        case Deal_the_second_publiccard:
+            // 翻开第二张张公共牌
+            sendCommand2Table_sendcontent("Deal 2nd flops?");
+            current_game_state = get_Deal_second_publiccard_confirm;
+            break;
+
+        case get_Deal_second_publiccard_confirm:
+            getUserInput(ui_input);
+            if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
+                new_cards_num = 1;
+                card_t = cardsenderProcesser(new_cards_num);
+                
+                public_cards.cards[1] = card_t[0];
+
+                sendCommand2Table_sendpubliccard();
+                
+
+                current_game_state = Deal_the_third_publiccard;
+            }
+            else {
+                current_game_state = get_Deal_second_publiccard_confirm;
+            }
+            break;
+
+        case Deal_the_third_publiccard:
+            // 翻开第一张张公共牌
+            sendCommand2Table_sendcontent("Deal 3rd flops?");
+            current_game_state = get_Deal_third_publiccard_confirm;
+            break;
+
+        case get_Deal_third_publiccard_confirm:
+            getUserInput(ui_input);
+            if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
+                new_cards_num = 1;
+                card_t = cardsenderProcesser(new_cards_num);
+                
+                public_cards.cards[2] = card_t[0];
+
+                sendCommand2Table_sendpubliccard();
+                
+
+                current_game_state = Game_start;
+            }
+            else {
+                current_game_state = get_Deal_third_publiccard_confirm;
             }
             break;
 
@@ -238,12 +356,7 @@ void wakeUpScheduler(void) {
 
 
 
-
-        case Deal_the_turn:
-            sendCommand2Table_sendcontent("Deal_the_flop");
-            
-            current_game_state = Game_start;
-            break;
+        
     }
     // free(card_t);
 }
