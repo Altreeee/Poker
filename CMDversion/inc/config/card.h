@@ -6,6 +6,7 @@ typedef enum {
     Clubs,      // 梅花
     Hearts,     // 红心
     Diamonds,   // 方块
+    OUT, // 已弃牌
 } SUIT;
 
 typedef struct {

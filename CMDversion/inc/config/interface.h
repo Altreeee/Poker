@@ -44,6 +44,15 @@ typedef enum {
     First_betting_round, // 第一轮下注
     get_First_betting_round_confirm,
 
+    NPC1_Decision_post,
+    NPC1_Decision,
+    NPC2_Decision_post,
+    NPC2_Decision,
+    NPC3_Decision_post,
+    NPC3_Decision,
+    Player_Decision_post,
+    Player_Decision,
+
     Showdown,            // 摊牌，开始比牌大小
 
     NPC1_in,

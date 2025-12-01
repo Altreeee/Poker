@@ -18,6 +18,7 @@ int public_chip = 0; // 公共筹码由scheduler管理
 PUBLIC_CARDS public_cards = {0}; // 公共牌由scheduler管理
 
 int id_chosen = 0; // 大盲注id号，初始化为0，使用值应为1-4
+int npc_hasfolded[4] = {0}; // 记录已经弃牌的npc序号，用数列的序号代表已经弃牌的npc序号，如果为1则已经弃牌，npc_hasfolded[0] = 1 意味着npc1已经弃牌
 
 /*
 // 向绑定的第index个模块发送消息
@@ -83,6 +84,12 @@ static void updatePublicChips () {
     );
 }
 
+// 弃牌程序
+static void npcFold (int npc_index) {
+    npc_hasfolded[npc_index - 1] = 1; // 记录已弃牌序号
+    changePlayerHandcards_simple(npc_index, 0, 4, 0, 4); // 花色为4即为OUT
+
+}
 
 GAME_STATE current_game_state = Game_start;
 
@@ -245,28 +252,60 @@ void wakeUpScheduler(void) {
         
         // 第一轮下注
         case First_betting_round:
-            sendCommand2Table_sendcontent("Start first betting round");
+            sendCommand2Table_sendcontent("1st betting round");
             current_game_state = get_First_betting_round_confirm;
+            int i = 0;
+            int current_index;
             break;
         case get_First_betting_round_confirm:
             getUserInput(ui_input);
             if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
                 /* 依次询问玩家决定：弃牌（放弃本局）、跟注（跟上大盲注金额）、加注（增加下注额） */
-                int i;
-                int current_index;
+                while (i < 4) {
+                    current_index = (id_chosen + i - 1)%4 + 1;
+                    if (current_index == 1) { // NPC1决策
+                        current_game_state = NPC1_Decision_post;
+                        i++;
+                        break;
+                    }
+                    if (current_index == 2) { // NPC2决策
+                        current_game_state = NPC2_Decision_post;
+                        i++;
+                        break;
+                    }
+                    if (current_index == 3) { // NPC3决策
+                        current_game_state = NPC3_Decision_post;
+                        i++;
+                        break;
+                    }
+                    if (current_index == 4) { // 玩家决策
+                        current_game_state = Player_Decision_post;
+                        i++;
+                        break;
+                    }
+                }
+                /*
                 for (i = 0; i < 4; ++i) {
                     current_index = (id_chosen + i - 1)%4 + 1;
                     Betting_Decision begging_decision;
                     begging_decision = ask_decision (current_index, public_cards);
                     if (begging_decision.decison_type == Fold) {
+                        // 弃牌
+                        npcFold(current_index);
+                        if (current_index == 4) { // 如果弃牌的是玩家（是否需要走不同的状态？）
 
+                        } else { // 弃牌的是npc
+
+                        }
                     } else if (begging_decision.decison_type == Call) {
+                        // 跟注
 
                     } else {
-                        // Raise 加注
+                        // 加注
 
                     }
                 }
+                */
                 current_game_state = Deal_the_first_publiccard;
             }
             else {
@@ -274,6 +313,100 @@ void wakeUpScheduler(void) {
             }
             break;
 
+        case NPC1_Decision_post:
+            sendCommand2Table_sendcontent("NPC1 decision");
+            current_game_state = NPC1_Decision;
+            break;
+        case NPC1_Decision:
+            Betting_Decision begging_decision;
+            begging_decision = ask_decision (1, public_cards);
+            if (begging_decision.decison_type == Fold) {
+                // 弃牌
+                npcFold(1);
+            } else if (begging_decision.decison_type == Call) {
+                // 跟注
+                changePlayerChips(1, -10);
+                public_chip += 10;
+                updatePublicChips();
+            } else {
+                // 加注
+                if (begging_decision.raise_num != NOT_RAISE_TYPE) {
+                    changePlayerChips(1, begging_decision.raise_num);
+                    public_chip += begging_decision.raise_num;
+                    pdatePublicChips();
+                }
+            }
+            current_game_state = get_First_betting_round_confirm;
+            break;
+
+        case NPC2_Decision_post:
+            sendCommand2Table_sendcontent("NPC2 decision");
+            current_game_state = NPC2_Decision;
+            break;
+        case NPC2_Decision:
+            Betting_Decision begging_decision;
+            begging_decision = ask_decision (2, public_cards);
+            if (begging_decision.decison_type == Fold) {
+                // 弃牌
+                npcFold(2);
+            } else if (begging_decision.decison_type == Call) {
+                // 跟注
+                changePlayerChips(2, -10);
+                public_chip += 10;
+                updatePublicChips();
+            } else {
+                // 加注
+                if (begging_decision.raise_num != NOT_RAISE_TYPE) {
+                    changePlayerChips(2, begging_decision.raise_num);
+                    public_chip += begging_decision.raise_num;
+                    pdatePublicChips();
+                }
+            }
+            current_game_state = get_First_betting_round_confirm;
+            break;
+
+        case NPC3_Decision_post:
+            sendCommand2Table_sendcontent("NPC3 decision");
+            current_game_state = NPC3_Decision;
+            break;
+        case NPC3_Decision:
+            Betting_Decision begging_decision;
+            begging_decision = ask_decision (3, public_cards);
+            if (begging_decision.decison_type == Fold) {
+                // 弃牌
+                npcFold(3);
+            } else if (begging_decision.decison_type == Call) {
+                // 跟注
+                changePlayerChips(3, -10);
+                public_chip += 10;
+                updatePublicChips();
+            } else {
+                // 加注
+                if (begging_decision.raise_num != NOT_RAISE_TYPE) {
+                    changePlayerChips(3, begging_decision.raise_num);
+                    public_chip += begging_decision.raise_num;
+                    pdatePublicChips();
+                }
+            }
+            current_game_state = get_First_betting_round_confirm;
+            break;
+
+        case Player_Decision_post:
+            sendCommand2Table_sendcontent("1:Fold;2:Call;3:Raise");
+            current_game_state = Player_Decision;
+            break;
+        case Player_Decision:
+            getUserInput(ui_input);
+            if (strcmp(ui_input, "1")) { // 玩家弃牌
+
+            }
+            if (strcmp(ui_input, "2")) { // 玩家跟注
+
+            }
+            if (strcmp(ui_input, "3")) { // 玩家加注
+
+            }
+           
 
 
 
