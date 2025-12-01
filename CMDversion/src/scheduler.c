@@ -258,59 +258,33 @@ void wakeUpScheduler(void) {
             int current_index;
             break;
         case get_First_betting_round_confirm:
-            getUserInput(ui_input);
-            if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
-                /* 依次询问玩家决定：弃牌（放弃本局）、跟注（跟上大盲注金额）、加注（增加下注额） */
-                while (i < 4) {
-                    current_index = (id_chosen + i - 1)%4 + 1;
-                    if (current_index == 1) { // NPC1决策
-                        current_game_state = NPC1_Decision_post;
-                        i++;
-                        break;
-                    }
-                    if (current_index == 2) { // NPC2决策
-                        current_game_state = NPC2_Decision_post;
-                        i++;
-                        break;
-                    }
-                    if (current_index == 3) { // NPC3决策
-                        current_game_state = NPC3_Decision_post;
-                        i++;
-                        break;
-                    }
-                    if (current_index == 4) { // 玩家决策
-                        current_game_state = Player_Decision_post;
-                        i++;
-                        break;
-                    }
+
+            /* 依次询问玩家决定：弃牌（放弃本局）、跟注（跟上大盲注金额）、加注（增加下注额） */
+            while (i < 4) {
+                current_index = (id_chosen + i - 1)%4 + 1;
+                if (current_index == 1) { // NPC1决策
+                    current_game_state = NPC1_Decision_post;
+                    i++;
+                    break;
                 }
-                /*
-                for (i = 0; i < 4; ++i) {
-                    current_index = (id_chosen + i - 1)%4 + 1;
-                    Betting_Decision begging_decision;
-                    begging_decision = ask_decision (current_index, public_cards);
-                    if (begging_decision.decison_type == Fold) {
-                        // 弃牌
-                        npcFold(current_index);
-                        if (current_index == 4) { // 如果弃牌的是玩家（是否需要走不同的状态？）
-
-                        } else { // 弃牌的是npc
-
-                        }
-                    } else if (begging_decision.decison_type == Call) {
-                        // 跟注
-
-                    } else {
-                        // 加注
-
-                    }
+                if (current_index == 2) { // NPC2决策
+                    current_game_state = NPC2_Decision_post;
+                    i++;
+                    break;
                 }
-                */
-                current_game_state = Deal_the_first_publiccard;
+                if (current_index == 3) { // NPC3决策
+                    current_game_state = NPC3_Decision_post;
+                    i++;
+                    break;
+                }
+                if (current_index == 4) { // 玩家决策
+                    current_game_state = Player_Decision_post;
+                    i++;
+                    break;
+                }
             }
-            else {
-                current_game_state = get_First_betting_round_confirm;
-            }
+            
+            current_game_state = Deal_the_first_publiccard;
             break;
 
         case NPC1_Decision_post:
@@ -319,7 +293,7 @@ void wakeUpScheduler(void) {
             break;
         case NPC1_Decision:
             Betting_Decision begging_decision;
-            begging_decision = ask_decision (1, public_cards);
+            begging_decision = ask_decision(1, public_cards);
             if (begging_decision.decison_type == Fold) {
                 // 弃牌
                 npcFold(1);

@@ -100,6 +100,7 @@ void initNPC_chip (int npc_index) {
 Betting_Decision ask_decision (int current_index, PUBLIC_CARDS public_cards) {
     // 准备传入给对应npc的所有牌局信息
     Betting_Decision begging_decision;
-    begging_decision = makeADecision(current_index, all_players, public_cards);
+    const NPC* npc_information = findPlayerIndex(all_players, current_index);
+    begging_decision = makeADecision(current_index, npc_information, public_cards);
     return begging_decision;
 }
