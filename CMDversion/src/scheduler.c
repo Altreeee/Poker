@@ -258,7 +258,6 @@ void wakeUpScheduler(void) {
             int current_index;
             break;
         case get_First_betting_round_confirm:
-
             /* 依次询问玩家决定：弃牌（放弃本局）、跟注（跟上大盲注金额）、加注（增加下注额） */
             while (i < 4) {
                 current_index = (id_chosen + i - 1)%4 + 1;
@@ -283,7 +282,6 @@ void wakeUpScheduler(void) {
                     break;
                 }
             }
-            
             current_game_state = Deal_the_first_publiccard;
             break;
 
