@@ -20,6 +20,10 @@ PUBLIC_CARDS public_cards = {0}; // 公共牌由scheduler管理
 int id_chosen = 0; // 大盲注id号，初始化为0，使用值应为1-4
 int npc_hasfolded[4] = {0}; // 记录已经弃牌的npc序号，用数列的序号代表已经弃牌的npc序号，如果为1则已经弃牌，npc_hasfolded[0] = 1 意味着npc1已经弃牌
 
+int forced_chips = 0; // 所有人想要不被出局则当前必须跟注的大小
+
+static int i = 0;
+
 /*
 // 向绑定的第index个模块发送消息
 static void schedulerSend(void *self, int index, MSG *msg){
@@ -245,6 +249,7 @@ void wakeUpScheduler(void) {
         case collect_bigblind_chip:
             changePlayerChips(id_chosen, -10);
             public_chip += 10;
+            forced_chips = 10; // 接下来跟注从10起步
             current_game_state = First_betting_round;
             updatePublicChips();
             break;
@@ -254,7 +259,7 @@ void wakeUpScheduler(void) {
         case First_betting_round:
             sendCommand2Table_sendcontent("1st betting round");
             current_game_state = get_First_betting_round_confirm;
-            int i = 0;
+            i = 0;
             int current_index;
             break;
         case get_First_betting_round_confirm:
@@ -282,7 +287,9 @@ void wakeUpScheduler(void) {
                     break;
                 }
             }
-            current_game_state = Deal_the_first_publiccard;
+            if (i == 4) {
+                current_game_state = Deal_the_first_publiccard;
+            }
             break;
 
         case NPC1_Decision_post:
@@ -291,21 +298,24 @@ void wakeUpScheduler(void) {
             break;
         case NPC1_Decision:
             Betting_Decision begging_decision;
-            begging_decision = ask_decision(1, public_cards);
+            begging_decision = ask_decision(1, public_cards, forced_chips);
             if (begging_decision.decison_type == Fold) {
                 // 弃牌
+                sendCommand2Table_sendcontent("NPC1 fold");
                 npcFold(1);
             } else if (begging_decision.decison_type == Call) {
                 // 跟注
+                sendCommand2Table_sendcontent("NPC1 call");
                 changePlayerChips(1, -10);
                 public_chip += 10;
                 updatePublicChips();
             } else {
                 // 加注
                 if (begging_decision.raise_num != NOT_RAISE_TYPE) {
+                    sendCommand2Table_sendcontent("NPC1 raise");
                     changePlayerChips(1, begging_decision.raise_num);
                     public_chip += begging_decision.raise_num;
-                    pdatePublicChips();
+                    updatePublicChips();
                 }
             }
             current_game_state = get_First_betting_round_confirm;
@@ -316,22 +326,25 @@ void wakeUpScheduler(void) {
             current_game_state = NPC2_Decision;
             break;
         case NPC2_Decision:
-            Betting_Decision begging_decision;
-            begging_decision = ask_decision (2, public_cards);
+            // Betting_Decision begging_decision;
+            begging_decision = ask_decision (2, public_cards, forced_chips);
             if (begging_decision.decison_type == Fold) {
                 // 弃牌
+                sendCommand2Table_sendcontent("NPC2 fold");
                 npcFold(2);
             } else if (begging_decision.decison_type == Call) {
                 // 跟注
+                sendCommand2Table_sendcontent("NPC2 call");
                 changePlayerChips(2, -10);
                 public_chip += 10;
                 updatePublicChips();
             } else {
                 // 加注
                 if (begging_decision.raise_num != NOT_RAISE_TYPE) {
+                    sendCommand2Table_sendcontent("NPC2 raise");
                     changePlayerChips(2, begging_decision.raise_num);
                     public_chip += begging_decision.raise_num;
-                    pdatePublicChips();
+                    updatePublicChips();
                 }
             }
             current_game_state = get_First_betting_round_confirm;
@@ -342,22 +355,25 @@ void wakeUpScheduler(void) {
             current_game_state = NPC3_Decision;
             break;
         case NPC3_Decision:
-            Betting_Decision begging_decision;
-            begging_decision = ask_decision (3, public_cards);
+            // Betting_Decision begging_decision;
+            begging_decision = ask_decision (3, public_cards, forced_chips);
             if (begging_decision.decison_type == Fold) {
                 // 弃牌
+                sendCommand2Table_sendcontent("NPC3 fold");
                 npcFold(3);
             } else if (begging_decision.decison_type == Call) {
                 // 跟注
+                sendCommand2Table_sendcontent("NPC3 call");
                 changePlayerChips(3, -10);
                 public_chip += 10;
                 updatePublicChips();
             } else {
                 // 加注
                 if (begging_decision.raise_num != NOT_RAISE_TYPE) {
+                    sendCommand2Table_sendcontent("NPC3 raise");
                     changePlayerChips(3, begging_decision.raise_num);
                     public_chip += begging_decision.raise_num;
-                    pdatePublicChips();
+                    updatePublicChips();
                 }
             }
             current_game_state = get_First_betting_round_confirm;

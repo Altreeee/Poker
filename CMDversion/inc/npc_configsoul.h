@@ -8,7 +8,7 @@
 
 
 
-Betting_Decision makeADecision (int current_index, NPC *all_players[], PUBLIC_CARDS public_cards);
+Betting_Decision makeADecision (int current_index, const NPC* npc_information, PUBLIC_CARDS public_cards, int forced_chips);
 
 
 

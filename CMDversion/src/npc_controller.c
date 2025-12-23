@@ -87,7 +87,7 @@ void changePlayerChips (int npc_index, int change_chip) {
 
 
 void initNPC_chip (int npc_index) {
-    int init_chip = generateRandomNumber(10, 1000);
+    int init_chip = generateRandomNumber(10, 100);
     NPC* targetNPC = findPlayerIndex(all_players, npc_index);
     if (targetNPC != NULL) {
         targetNPC->chips = init_chip;
@@ -97,10 +97,10 @@ void initNPC_chip (int npc_index) {
 
 
 // 询问对应id的玩家下注决策
-Betting_Decision ask_decision (int current_index, PUBLIC_CARDS public_cards) {
+Betting_Decision ask_decision (int current_index, PUBLIC_CARDS public_cards, int forced_chips) {
     // 准备传入给对应npc的所有牌局信息
     Betting_Decision begging_decision;
     const NPC* npc_information = findPlayerIndex(all_players, current_index);
-    begging_decision = makeADecision(current_index, npc_information, public_cards);
+    begging_decision = makeADecision(current_index, npc_information, public_cards, forced_chips);
     return begging_decision;
 }

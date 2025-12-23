@@ -12,7 +12,7 @@
 void changePlayerHandcards (int npc_index, HAND_CARDS new_handcards);
 void changePlayerChips (int npc_index, int change_chip);
 void initNPC_chip (int npc_index);
-Betting_Decision ask_decision (int current_index, PUBLIC_CARDS public_cards);
+Betting_Decision ask_decision (int current_index, PUBLIC_CARDS public_cards, int forced_chips);
 
 
 typedef struct {
