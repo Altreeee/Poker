@@ -101,9 +101,9 @@ void wakeUpScheduler(void) {
     CARD* card_t; // 临时存储发牌器发来的牌结构体数组指针，注意：后面需要free
     int new_cards_num;
     switch (current_game_state) {
-        /*
+        /***********************************************************************
             开始
-        */
+        ************************************************************************/
         case Game_start:
             sendCommand2Table_sendcontent("Game Start(Y/N?)");
             current_game_state = get_Game_start_confirm;
@@ -111,7 +111,7 @@ void wakeUpScheduler(void) {
 
         case get_Game_start_confirm:
             getUserInput(ui_input);
-            if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
+            if (strcmp(ui_input, "Y")==0 || strcmp(ui_input, "y")==0) {
                 
                 // 将所有牌初始化
                 changePlayerHandcards_simple(1, 0, 0, 0, 0);
@@ -141,9 +141,9 @@ void wakeUpScheduler(void) {
         
 
 
-        /*
+        /************************************************************************
             NPC入场
-        */
+        ************************************************************************/
         case NPC1_in:
             initNPC_chip (1);
             current_game_state = NPC2_in;
@@ -165,9 +165,9 @@ void wakeUpScheduler(void) {
 
 
 
-        /*
+        /************************************************************************
             发手牌
-        */
+        ************************************************************************/
         case Deal_the_hole_cards:
             /*
                 给多个外部模块依次发消息，并等待回信，
@@ -180,7 +180,7 @@ void wakeUpScheduler(void) {
 
         case get_Deal_the_hole_cards_confirm:
             getUserInput(ui_input);
-            if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
+            if (strcmp(ui_input, "Y")==0 || strcmp(ui_input, "y")==0) {
                 current_game_state = send_Hand_card_NPC1;
             }
             else {
@@ -230,9 +230,9 @@ void wakeUpScheduler(void) {
 
 
 
-        /*
+        /************************************************************************
             抽大盲注id
-        */
+        ************************************************************************/
         case Draw_for_the_big_blind:
             id_chosen = generateRandomNumber(1,4);
             char str[100];
@@ -248,14 +248,15 @@ void wakeUpScheduler(void) {
         // 扣大盲注筹码
         case collect_bigblind_chip:
             changePlayerChips(id_chosen, -10);
-            public_chip += 10;
             forced_chips = 10; // 接下来跟注从10起步
+            public_chip += forced_chips;
             current_game_state = First_betting_round;
             updatePublicChips();
             break;
 
-        
-        // 第一轮下注
+        /************************************************************************
+         * 第一轮下注
+         ************************************************************************/
         case First_betting_round:
             sendCommand2Table_sendcontent("1st betting round");
             current_game_state = get_First_betting_round_confirm;
@@ -264,30 +265,26 @@ void wakeUpScheduler(void) {
             break;
         case get_First_betting_round_confirm:
             /* 依次询问玩家决定：弃牌（放弃本局）、跟注（跟上大盲注金额）、加注（增加下注额） */
-            while (i < 4) {
+            if (i < 4) {
                 current_index = (id_chosen + i - 1)%4 + 1;
                 if (current_index == 1) { // NPC1决策
                     current_game_state = NPC1_Decision_post;
                     i++;
-                    break;
                 }
-                if (current_index == 2) { // NPC2决策
+                else if (current_index == 2) { // NPC2决策
                     current_game_state = NPC2_Decision_post;
                     i++;
-                    break;
                 }
-                if (current_index == 3) { // NPC3决策
+                else if (current_index == 3) { // NPC3决策
                     current_game_state = NPC3_Decision_post;
                     i++;
-                    break;
                 }
-                if (current_index == 4) { // 玩家决策
+                else if (current_index == 4) { // 玩家决策
                     current_game_state = Player_Decision_post;
                     i++;
-                    break;
                 }
             }
-            if (i == 4) {
+            else {
                 current_game_state = Deal_the_first_publiccard;
             }
             break;
@@ -306,15 +303,19 @@ void wakeUpScheduler(void) {
             } else if (begging_decision.decison_type == Call) {
                 // 跟注
                 sendCommand2Table_sendcontent("NPC1 call");
-                changePlayerChips(1, -10);
-                public_chip += 10;
+                changePlayerChips(1, (-1)*forced_chips);
+                public_chip += forced_chips;
                 updatePublicChips();
             } else {
                 // 加注
                 if (begging_decision.raise_num != NOT_RAISE_TYPE) {
                     sendCommand2Table_sendcontent("NPC1 raise");
-                    changePlayerChips(1, begging_decision.raise_num);
-                    public_chip += begging_decision.raise_num;
+                    /*
+                        TO DO: 检查加注金额必须大于 forced_chips
+                    */
+                    forced_chips = begging_decision.raise_num;
+                    changePlayerChips(1, (-1)*forced_chips);
+                    public_chip += forced_chips;
                     updatePublicChips();
                 }
             }
@@ -335,15 +336,16 @@ void wakeUpScheduler(void) {
             } else if (begging_decision.decison_type == Call) {
                 // 跟注
                 sendCommand2Table_sendcontent("NPC2 call");
-                changePlayerChips(2, -10);
-                public_chip += 10;
+                changePlayerChips(2, (-1)*forced_chips);
+                public_chip += forced_chips;
                 updatePublicChips();
             } else {
                 // 加注
                 if (begging_decision.raise_num != NOT_RAISE_TYPE) {
                     sendCommand2Table_sendcontent("NPC2 raise");
-                    changePlayerChips(2, begging_decision.raise_num);
-                    public_chip += begging_decision.raise_num;
+                    forced_chips = begging_decision.raise_num;
+                    changePlayerChips(2, (-1)*forced_chips);
+                    public_chip += forced_chips;
                     updatePublicChips();
                 }
             }
@@ -364,15 +366,16 @@ void wakeUpScheduler(void) {
             } else if (begging_decision.decison_type == Call) {
                 // 跟注
                 sendCommand2Table_sendcontent("NPC3 call");
-                changePlayerChips(3, -10);
-                public_chip += 10;
+                changePlayerChips(3, (-1)*forced_chips);
+                public_chip += forced_chips;
                 updatePublicChips();
             } else {
                 // 加注
                 if (begging_decision.raise_num != NOT_RAISE_TYPE) {
                     sendCommand2Table_sendcontent("NPC3 raise");
-                    changePlayerChips(3, begging_decision.raise_num);
-                    public_chip += begging_decision.raise_num;
+                    forced_chips = begging_decision.raise_num;
+                    changePlayerChips(3, (-1)*forced_chips);
+                    public_chip += forced_chips;
                     updatePublicChips();
                 }
             }
@@ -385,23 +388,49 @@ void wakeUpScheduler(void) {
             break;
         case Player_Decision:
             getUserInput(ui_input);
-            if (strcmp(ui_input, "1")) { // 玩家弃牌
-
+            if (strcmp(ui_input, "1")==0) { // 玩家弃牌
+                npcFold(4);
+                current_game_state = get_First_betting_round_confirm;
+                break;
             }
-            if (strcmp(ui_input, "2")) { // 玩家跟注
-
+            else if (strcmp(ui_input, "2")==0) { // 玩家跟注
+                changePlayerChips(4, (-1)*forced_chips);
+                public_chip += forced_chips;
+                updatePublicChips();
+                current_game_state = get_First_betting_round_confirm;
+                break;
             }
-            if (strcmp(ui_input, "3")) { // 玩家加注
-
+            else if (strcmp(ui_input, "3")==0) { // 玩家加注
+                sendCommand2Table_sendcontent("u raise");
+                current_game_state = ask_player_raise_num;
+                break;
             }
+        
            
+        case ask_player_raise_num:
+            sendCommand2Table_sendcontent("how much?");
+            current_game_state = wait_player_raise_num;
+            break;
+        case wait_player_raise_num:
+            getUserInput(ui_input);
+            /*
+                TO DO: 检查输入是否为数字
+            */
+            int player_raise_num = atoi(ui_input);
+            /*
+                TO DO: 检查输入数字大小是否合法
+            */
+            forced_chips = player_raise_num;
+            changePlayerChips(4, (-1)*forced_chips);
+            public_chip += forced_chips;
+            updatePublicChips();
+            current_game_state = get_First_betting_round_confirm;
+            break;
 
 
-
-
-        /*
-            翻公共牌
-        */
+        /************************************************************************
+         * 翻公共牌
+         ************************************************************************/
         // 翻开第一张张公共牌
         case Deal_the_first_publiccard:
             sendCommand2Table_sendcontent("Deal 1st flops?");
@@ -410,7 +439,7 @@ void wakeUpScheduler(void) {
 
         case get_Deal_first_publiccard_confirm:
             getUserInput(ui_input);
-            if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
+            if (strcmp(ui_input, "Y")==0 || strcmp(ui_input, "y")==0) {
                 new_cards_num = 1;
                 card_t = cardsenderProcesser(new_cards_num);
                 
@@ -433,7 +462,7 @@ void wakeUpScheduler(void) {
 
         case get_Deal_second_publiccard_confirm:
             getUserInput(ui_input);
-            if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
+            if (strcmp(ui_input, "Y")==0 || strcmp(ui_input, "y")==0) {
                 new_cards_num = 1;
                 card_t = cardsenderProcesser(new_cards_num);
                 
@@ -457,7 +486,7 @@ void wakeUpScheduler(void) {
 
         case get_Deal_third_publiccard_confirm:
             getUserInput(ui_input);
-            if (strcmp(ui_input, "Y") || strcmp(ui_input, "y")) {
+            if (strcmp(ui_input, "Y")==0 || strcmp(ui_input, "y")==0) {
                 new_cards_num = 1;
                 card_t = cardsenderProcesser(new_cards_num);
                 

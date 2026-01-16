@@ -53,6 +53,9 @@ typedef enum {
     Player_Decision_post,
     Player_Decision,
 
+    ask_player_raise_num,
+    wait_player_raise_num,
+
     Showdown,            // 摊牌，开始比牌大小
 
     NPC1_in,
